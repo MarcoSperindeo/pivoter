@@ -7,7 +7,7 @@ import java.util.Map;
 public class Row {
 
     private final Map<String, String> labels; // Labels with domain names as keys
-    private final Double value; // Vᵢ
+    private final Double value; // Value
 
     public Row(Map<String, String> labels, Double value) {
         this.labels = labels;
@@ -16,16 +16,6 @@ public class Row {
 
     public List<String> getLabels() {
         return new ArrayList<>(labels.values());
-    }
-
-    public List<String> getSortedLabels() {
-        return new ArrayList<>(
-                labels.keySet()
-                        .stream()
-                        .sorted()
-                        .map(labels::get)
-                        .toList()
-        );
     }
 
     public Double getValue() {

@@ -15,13 +15,12 @@ public class PivotTree {
     }
 
     public void build(List<Row> rows) {
-
         PivotTreeNode root = new PivotTreeNode("root");
 
         for (Row row : rows) {
             PivotTreeNode node = root;
 
-            List<String> sortedLabels = row.getSortedLabels(); //
+            List<String> sortedLabels = row.getLabels(); //
             sortedLabels.add(0, "root"); // ensure that "root" is the starting label
 
             while (!sortedLabels.isEmpty()) {
@@ -52,7 +51,7 @@ public class PivotTree {
         PivotTreeNode root = new PivotTreeNode("root");
 
         for (Row row : rows) {
-            List<String> sortedLabels = row.getSortedLabels();
+            List<String> sortedLabels = row.getLabels();
             sortedLabels.add(0, "root"); // ensure that "root" is the starting label
 
             buildRecursive(root, sortedLabels, row);
@@ -62,7 +61,6 @@ public class PivotTree {
     }
 
     private void buildRecursive(PivotTreeNode node, List<String> sortedLabels, Row row) {
-
         // apply aggregate function
         node.setValue(node.getValue() + row.getValue());
 
