@@ -5,12 +5,17 @@ import java.util.List;
 import java.util.Map;
 
 public class Row {
+
     private final Map<String, String> labels; // Labels with domain names as keys
     private final Double value; // Vᵢ
 
     public Row(Map<String, String> labels, Double value) {
         this.labels = labels;
         this.value = value;
+    }
+
+    public List<String> getLabels() {
+        return new ArrayList<>(labels.values());
     }
 
     public List<String> getSortedLabels() {

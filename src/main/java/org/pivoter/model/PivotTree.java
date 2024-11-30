@@ -6,31 +6,38 @@ public class PivotTree {
 
     private PivotTreeNode root;
 
-    public void buildPivotTree(List<Row> rows) {
+    public PivotTree() {
+        this.root = null;
+    }
+
+    public PivotTreeNode getRoot() {
+        return root;
+    }
+
+    public void build(List<Row> rows) {
 
         PivotTreeNode root = new PivotTreeNode("root");
 
         for (Row row : rows) {
-            PivotTreeNode parent = root;
+            PivotTreeNode node = root;
 
-            List<String> sortedLabels = row.getSortedLabels();
+            List<String> sortedLabels = row.getSortedLabels(); //
             sortedLabels.add(0, "root"); // ensure that "root" is the starting label
 
             while (!sortedLabels.isEmpty()) {
 
                 String currentLabel = sortedLabels.get(0);
-                // if current parent des not have label, set it
-                if (parent.getLabel() == null)
-                    parent.setLabel(currentLabel);
+                // if current node does not have label, set it
+                if (node.getLabel() == null)
+                    node.setLabel(currentLabel);
 
                 // apply aggregate function
-                parent.setValue(parent.getValue() + row.getValue());
+                node.setValue(node.getValue() + row.getValue());
 
                 if (sortedLabels.size() > 1) { // ensure leaf is not reached
                     String nextLabel = sortedLabels.get(1);
-                    PivotTreeNode child = parent.getOrAddChild(nextLabel);
-                    // set child as current parent for next iteration
-                    parent = child;
+                    // set child as current node for next iteration
+                    node = node.getOrAddChild(nextLabel);
                 }
 
                 // remove first element from sorted labels
@@ -41,46 +48,77 @@ public class PivotTree {
         this.root = root;
     }
 
-    public void buildPivotTreeRecursive(List<Row> rows) {
+    public void buildRecursive(List<Row> rows) {
         PivotTreeNode root = new PivotTreeNode("root");
 
         for (Row row : rows) {
             List<String> sortedLabels = row.getSortedLabels();
             sortedLabels.add(0, "root"); // ensure that "root" is the starting label
 
-            buildTreeRecursive(root, sortedLabels, row);
+            buildRecursive(root, sortedLabels, row);
         }
 
         this.root = root;
     }
 
-    private void buildTreeRecursive(PivotTreeNode parent, List<String> sortedLabels, Row row) {
+    private void buildRecursive(PivotTreeNode node, List<String> sortedLabels, Row row) {
+
+        // apply aggregate function
+        node.setValue(node.getValue() + row.getValue());
+
         if (sortedLabels.size() == 1) {
             return; // leaf is reached
         }
 
         String currentLabel = sortedLabels.get(0);
-        // if current parent des not have label, set it
-        if (parent.getLabel() == null) {
-            parent.setLabel(currentLabel);
+        // if current node des not have label, set it
+        if (node.getLabel() == null) {
+            node.setLabel(currentLabel);
         }
 
-        // apply aggregate function
-        parent.setValue(parent.getValue() + row.getValue());
-
         String nextLabel = sortedLabels.get(1);
-        PivotTreeNode child = parent.getOrAddChild(nextLabel);
+        PivotTreeNode child = node.getOrAddChild(nextLabel);
 
         // recur
-        buildTreeRecursive(child, sortedLabels.subList(1, sortedLabels.size()), row);
-
+        buildRecursive(child, sortedLabels.subList(1, sortedLabels.size()), row);
     }
 
-    public PivotTreeNode getRoot() {
-        return root;
+    public Double query(List<String> sortedLabels) {
+        if (root == null || sortedLabels == null || sortedLabels.isEmpty()) {
+            return null;
+        }
+
+        return queryRecursive(root, sortedLabels);
     }
 
-    // query pivot tree method
+    private Double queryRecursive(PivotTreeNode node, List<String> sortedLabels) {
+        if (sortedLabels.isEmpty()) { // base-case
+            return node.getValue();
+        }
 
-    // toString pivot tree method
+        return queryRecursive(
+                node.getChild(sortedLabels.get(0)),
+                sortedLabels.subList(1, sortedLabels.size()));
+    }
+
+    @Override
+    public String toString() {
+        return toStringRecursive(this.root, "");
+    }
+
+    private String toStringRecursive(PivotTreeNode node, String indent) {
+        if (node == null) {
+            return "";
+        }
+
+        StringBuilder tree = new StringBuilder();
+        tree.append("\n");
+        tree.append(indent + node.getLabel() + " (" + node.getValue() + ")");
+
+        for (PivotTreeNode child : node.getChildren().values()) {
+            tree.append(toStringRecursive(child, indent + "  "));
+        }
+
+        return tree.toString();
+    }
 }

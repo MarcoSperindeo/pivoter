@@ -31,6 +31,10 @@ public class PivotTreeNode {
         this.value = value;
     }
 
+    public Map<String, PivotTreeNode> getChildren() {
+        return children;
+    }
+
     public PivotTreeNode getChild(String label) {
         return children.getOrDefault(label, null);
     }
