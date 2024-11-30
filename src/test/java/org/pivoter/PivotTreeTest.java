@@ -5,7 +5,9 @@ import org.pivoter.model.PivotTree;
 import org.pivoter.model.PivotTreeNode;
 import org.pivoter.model.Row;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -111,12 +113,13 @@ class PivotTreeTest {
 
         // assert blonde-italy label, value, children
         assertThat(blondeItaly.getLabel()).isEqualTo("italy");
-        assertThat(blondeItaly.getValue()).isEqualTo(valueRow2 );
+        assertThat(blondeItaly.getValue()).isEqualTo(valueRow2);
         assertThat(blondeItaly.getChildren()).isEmpty();
     }
 
     @Test
     void testBuildRecursive() {
+        //given
         //given
         List<List<String>> labelsRow1 = Arrays.asList(
                 List.of("eyes", "brown"),
@@ -129,11 +132,21 @@ class PivotTreeTest {
                 List.of("nation", "italy")
         );
 
+        List<List<String>> labelsRow3 = Arrays.asList(
+                List.of("eyes", "brown"),
+                List.of("hair", "dark"),
+                List.of("nation", "italy"),
+                List.of("sex", "M")
+        );
+
         double valueRow1 = 10.0;
         double valueRow2 = 20.0;
+        double valueRow3 = 30.0;
+
         Row row1 = buildRow(labelsRow1, valueRow1);
         Row row2 = buildRow(labelsRow2, valueRow2);
-        List<Row> rows = List.of(row1, row2);
+        Row row3 = buildRow(labelsRow3, valueRow3);
+        List<Row> rows = List.of(row1, row2, row3);
 
         //when
         pivotTree.buildRecursive(rows);
@@ -209,12 +222,21 @@ class PivotTreeTest {
                 List.of("nation", "italy")
         );
 
+        List<List<String>> labelsRow3 = Arrays.asList(
+                List.of("eyes", "brown"),
+                List.of("hair", "dark"),
+                List.of("nation", "italy"),
+                List.of("sex", "M")
+        );
+
         double valueRow1 = 10.0;
         double valueRow2 = 20.0;
+        double valueRow3 = 30.0;
 
         Row row1 = buildRow(labelsRow1, valueRow1);
         Row row2 = buildRow(labelsRow2, valueRow2);
-        List<Row> rows = List.of(row1, row2);
+        Row row3 = buildRow(labelsRow3, valueRow3);
+        List<Row> rows = List.of(row1, row2, row3);
 
         pivotTree.build(rows);
 
@@ -224,6 +246,7 @@ class PivotTreeTest {
 
     @Test
     void testQuery() {
+        //given
         //given
         List<List<String>> labelsRow1 = Arrays.asList(
                 List.of("eyes", "brown"),
@@ -236,12 +259,21 @@ class PivotTreeTest {
                 List.of("nation", "italy")
         );
 
+        List<List<String>> labelsRow3 = Arrays.asList(
+                List.of("eyes", "brown"),
+                List.of("hair", "dark"),
+                List.of("nation", "italy"),
+                List.of("sex", "M")
+        );
+
         double valueRow1 = 10.0;
         double valueRow2 = 20.0;
+        double valueRow3 = 30.0;
 
         Row row1 = buildRow(labelsRow1, valueRow1);
         Row row2 = buildRow(labelsRow2, valueRow2);
-        List<Row> rows = List.of(row1, row2);
+        Row row3 = buildRow(labelsRow3, valueRow3);
+        List<Row> rows = List.of(row1, row2, row3);
 
         pivotTree.build(rows);
 
@@ -253,7 +285,7 @@ class PivotTreeTest {
         //then
         assertThat(result1)
                 .isNotNull()
-                .isEqualTo(valueRow1 + valueRow2);
+                .isEqualTo(valueRow1 + valueRow2 + valueRow3);
 
         // when
         List<String> queryLabels2 = List.of("brown", "dark", "italy");
@@ -263,28 +295,36 @@ class PivotTreeTest {
         //then
         assertThat(result2)
                 .isNotNull()
-                .isEqualTo(valueRow1);
+                .isEqualTo(valueRow1 + valueRow3);
 
         // when
-        List<String> queryLabels3 = List.of("brown", "blonde", "italy");
+        List<String> queryLabels3 = List.of("brown", "dark", "italy", "M");
 
         Double result3 = pivotTree.query(queryLabels3);
 
         //then
         assertThat(result3)
                 .isNotNull()
+                .isEqualTo(valueRow3);
+
+        // when
+        List<String> queryLabels4 = List.of("brown", "blonde", "italy");
+
+        Double result4 = pivotTree.query(queryLabels4);
+
+        //then
+        assertThat(result4)
+                .isNotNull()
                 .isEqualTo(valueRow2);
     }
 
     private Row buildRow(List<List<String>> labelsRow, Double value) {
-        // linked hash-map guarantees the keys insertion order is kept
-        Map<String, String> sortedLabels = new LinkedHashMap<>();
+        List<String> labels = new LinkedList<>();
 
-        for (List<String> labels : labelsRow) {
-            sortedLabels.put(labels.get(0), labels.get(1));
+        for (List<String> label : labelsRow) {
+            labels.add(label.get(1));
         }
 
-        Row row = new Row(sortedLabels, value);
-        return row;
+        return new Row(labels, value);
     }
 }

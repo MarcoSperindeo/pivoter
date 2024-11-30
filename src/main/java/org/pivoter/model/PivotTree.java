@@ -64,8 +64,9 @@ public class PivotTree {
         // apply aggregate function
         node.setValue(node.getValue() + row.getValue());
 
-        if (sortedLabels.size() == 1) {
-            return; // leaf is reached
+        // leaf is reached
+        if (sortedLabels.size() == 1) { // termination condition
+            return;
         }
 
         String currentLabel = sortedLabels.get(0);
@@ -83,14 +84,18 @@ public class PivotTree {
 
     public Double query(List<String> sortedLabels) {
         if (root == null || sortedLabels == null || sortedLabels.isEmpty()) {
-            return null;
+            throw new IllegalArgumentException();
         }
 
         return queryRecursive(root, sortedLabels);
     }
 
     private Double queryRecursive(PivotTreeNode node, List<String> sortedLabels) {
-        if (sortedLabels.isEmpty()) { // base-case
+        if (node == null) { // node does not exist
+            return 0.0;
+        }
+
+        if (sortedLabels.isEmpty()) { // termination condition
             return node.getValue();
         }
 
@@ -111,7 +116,8 @@ public class PivotTree {
 
         StringBuilder tree = new StringBuilder();
         tree.append("\n");
-        tree.append(indent + node.getLabel() + " (" + node.getValue() + ")");
+        tree.append(indent).append(node.getLabel())
+                .append(" (").append(node.getValue()).append(")");
 
         for (PivotTreeNode child : node.getChildren().values()) {
             tree.append(toStringRecursive(child, indent + "  "));
