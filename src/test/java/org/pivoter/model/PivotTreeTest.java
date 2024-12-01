@@ -1,9 +1,6 @@
-package org.pivoter;
+package org.pivoter.model;
 
 import org.junit.jupiter.api.Test;
-import org.pivoter.model.PivotTree;
-import org.pivoter.model.PivotTreeNode;
-import org.pivoter.model.Row;
 
 import java.util.Arrays;
 import java.util.LinkedList;

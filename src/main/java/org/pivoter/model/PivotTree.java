@@ -26,11 +26,9 @@ public class PivotTree {
             PivotTreeNode node = root;
 
             while (!sortedLabels.isEmpty()) {
-
                 String currentLabel = sortedLabels.get(0);
                 // if current node does not have label, set it
-                if (node.getLabel() == null)
-                    node.setLabel(currentLabel);
+                if (node.getLabel() == null) node.setLabel(currentLabel);
 
                 node.setValue(node.getValue() + row.getValue());
 
@@ -39,14 +37,13 @@ public class PivotTree {
                     // set child as current node for next iteration
                     node = node.getOrAddChild(nextLabel);
                 }
-
                 // remove first element from sorted labels
                 sortedLabels.remove(0);
             }
         }
     }
 
-    public void buildRecursive(List<Row> rows) {
+    void buildRecursive(List<Row> rows) {
         if (rows == null) {
             throw new IllegalArgumentException("rows cannot be null");
         }
