@@ -7,10 +7,10 @@ public class PivotTreeNode {
 
     private String label;
     private Double value;
-    private Map<String, PivotTreeNode> children;
+    private final Map<String, PivotTreeNode> children;
 
     public PivotTreeNode(String label) {
-        children = new HashMap<>();
+        this.children = new HashMap<>();
         this.label = label;
         this.value = 0.0;
     }
@@ -49,10 +49,8 @@ public class PivotTreeNode {
         return child;
     }
 
-    public void addChildIfNotPresent(String label, PivotTreeNode child) {
-        if (children.containsKey(label)) {
-            return;
-        }
+    private void addChildIfNotPresent(String label, PivotTreeNode child) {
+        if (children.containsKey(label)) return;
         children.put(label, child);
     }
 
