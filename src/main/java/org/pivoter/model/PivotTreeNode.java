@@ -1,18 +1,17 @@
 package org.pivoter.model;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class PivotTreeNode {
 
     private String label;
-    private Double value;
+    private final List<Double> values;
     private final Map<String, PivotTreeNode> children;
 
     public PivotTreeNode(String label) {
         this.children = new HashMap<>();
+        this.values = new ArrayList<>();
         this.label = label;
-        this.value = 0.0;
     }
 
     public String getLabel() {
@@ -23,12 +22,12 @@ public class PivotTreeNode {
         this.label = label;
     }
 
-    public Double getValue() {
-        return value;
+    public List<Double> getValues() {
+        return values;
     }
 
-    public void setValue(Double value) {
-        this.value = value;
+    public void addValue(Double value) {
+        this.values.add(value);
     }
 
     public Map<String, PivotTreeNode> getChildren() {
@@ -58,7 +57,7 @@ public class PivotTreeNode {
     public String toString() {
         return "PivotTreeNode{" +
                 "label='" + label + '\'' +
-                ", value=" + value +
+                ", value=" + values +
                 ", children=" + children +
                 '}';
     }
