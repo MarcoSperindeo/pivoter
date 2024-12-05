@@ -37,13 +37,18 @@ public class Pivoter {
 
     // add Javadoc
     // make it generic
-    public Double query(PivotTree pivotTree,
-                        List<String> queryLabels,
+    public Double query(List<String> queryLabels,
                         Function<Collection<Double>, Double> pivotFunction) {
         // sort query labels by pivot order
         // query tree by labels
         return null;
     }
 
+    public PivotTree getPivotTree() {
+        return pivotTree;
+    }
 
+    public Comparator<String> getPivotOrder() {
+        return pivotOrder;
+    }
 }
