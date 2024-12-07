@@ -1,4 +1,4 @@
-package org.pivoter.model;
+package org.pivoter;
 
 import org.junit.jupiter.api.Test;
 import org.pivoter.utils.PivotFunctionUtils;

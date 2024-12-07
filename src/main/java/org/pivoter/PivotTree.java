@@ -1,4 +1,4 @@
-package org.pivoter.model;
+package org.pivoter;
 
 import java.util.Collection;
 import java.util.List;
@@ -16,9 +16,9 @@ public class PivotTree {
         return root;
     }
 
-    public void build(List<PivotRow> pivotRows) {
+    void build(List<PivotRow> pivotRows) {
         if (pivotRows == null) {
-            throw new IllegalArgumentException("rows cannot be null");
+            throw new IllegalArgumentException("Input pivot rows cannot be null.");
         }
 
         for (PivotRow pivotRow : pivotRows) {
@@ -47,7 +47,7 @@ public class PivotTree {
 
     void buildRecursive(List<PivotRow> pivotRows) {
         if (pivotRows == null) {
-            throw new IllegalArgumentException("rows cannot be null");
+            throw new IllegalArgumentException("Input pivot rows cannot be null.");
         }
 
         for (PivotRow pivotRow : pivotRows) {
@@ -79,9 +79,9 @@ public class PivotTree {
         buildRecursive(child, sortedLabels.subList(1, sortedLabels.size()), pivotRow);
     }
 
-    public Double query(List<String> queryLabels, Function<Collection<Double>, Double> pivotFunction) {
+    Double query(List<String> queryLabels, Function<Collection<Double>, Double> pivotFunction) {
         if (queryLabels == null) {
-            throw new IllegalArgumentException("queryLabels cannot be null");
+            throw new IllegalArgumentException("Input query labels cannot be null.");
         }
 
         return queryRecursive(root, queryLabels, pivotFunction);

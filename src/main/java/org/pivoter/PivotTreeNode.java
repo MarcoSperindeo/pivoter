@@ -1,4 +1,4 @@
-package org.pivoter.model;
+package org.pivoter;
 
 import java.util.*;
 
