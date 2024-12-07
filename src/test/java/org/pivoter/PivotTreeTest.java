@@ -1,6 +1,7 @@
 package org.pivoter.model;
 
 import org.junit.jupiter.api.Test;
+import org.pivoter.utils.PivotFunctionUtils;
 
 import java.util.*;
 import java.util.function.Function;
@@ -14,14 +15,14 @@ class PivotTreeTest {
 
     @Test
     void testBuild() {
-        //given
+        // given
         double valueRow1 = 10.0;
         double valueRow2 = 20.0;
         double valueRow3 = 30.0;
-        List<Row> rows = buildRowsWithEyesHairNationLabels(valueRow1, valueRow2, valueRow3);
+        List<PivotRow> pivotRows = buildRowsWithNaturalOrderSortedLabels(valueRow1, valueRow2, valueRow3);
 
-        //when
-        pivotTree.build(rows);
+        // when
+        pivotTree.build(pivotRows);
 
         //then
         PivotTreeNode root = pivotTree.getRoot();
@@ -84,18 +85,59 @@ class PivotTreeTest {
     }
 
     @Test
-    void testBuildRecursive() {
-        //given
+    void testBuild_throwsExceptionWhenPivotRowsAreNull() {
+        // given-when-then
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> pivotTree.build(null));
+    }
+
+    @Test
+    void testBuild_pivotRowsWithVariableSizeLabels() {
+        // given
         double valueRow1 = 10.0;
         double valueRow2 = 20.0;
         double valueRow3 = 30.0;
 
-        List<Row> rows = buildRowsWithEyesHairNationLabels(valueRow1, valueRow2, valueRow3);
+        List<List<String>> labelsRow1 = Arrays.asList(
+                List.of("eyes", "brown"),
+                List.of("hair", "dark"),
+                List.of("nation", "italy")
+        );
+        List<List<String>> labelsRow2 = Arrays.asList(
+                List.of("eyes", "brown"),
+                List.of("nation", "italy")
+        );
 
-        //when
-        pivotTree.buildRecursive(rows);
+        List<List<String>> labelsRow3 = Arrays.asList(
+                List.of("eyes", "brown"),
+                List.of("hair", "dark"),
+                List.of("nation", "italy")
+        );
 
-        //then
+        PivotRow pivotRow1 = buildRow(labelsRow1, valueRow1);
+        PivotRow pivotRow2 = buildRow(labelsRow2, valueRow2);
+        PivotRow pivotRow3 = buildRow(labelsRow3, valueRow3);
+        List<PivotRow> pivotRows = List.of(pivotRow1, pivotRow2, pivotRow3);
+
+        // when
+        pivotTree.build(pivotRows);
+
+        System.out.println(pivotTree);
+    }
+
+    @Test
+    void testBuildRecursive() {
+        // given
+        double valueRow1 = 10.0;
+        double valueRow2 = 20.0;
+        double valueRow3 = 30.0;
+
+        List<PivotRow> pivotRows = buildRowsWithNaturalOrderSortedLabels(valueRow1, valueRow2, valueRow3);
+
+        // when
+        pivotTree.buildRecursive(pivotRows);
+
+        // then
         PivotTreeNode root = pivotTree.getRoot();
 
         // assert root label, value, children
@@ -157,38 +199,38 @@ class PivotTreeTest {
 
     @Test
     void testToString() {
-        //given
+        // given
         double valueRow1 = 10.0;
         double valueRow2 = 20.0;
         double valueRow3 = 30.0;
 
-        List<Row> rows = buildRowsWithEyesHairNationLabels(valueRow1, valueRow2, valueRow3);
+        List<PivotRow> pivotRows = buildRowsWithNaturalOrderSortedLabels(valueRow1, valueRow2, valueRow3);
 
-        pivotTree.build(rows);
+        pivotTree.build(pivotRows);
 
-        //when-then
+        // when-then
         System.out.println(pivotTree);
     }
 
     @Test
     void testQuery_returnsZeroWhenQueryLabelsDoNotMatchAnyElement() {
-        //given
+        // given
         double valueRow1 = 10.0;
         double valueRow2 = 20.0;
         double valueRow3 = 30.0;
 
-        List<Row> rows = buildRowsWithEyesHairNationLabels(valueRow1, valueRow2, valueRow3);
+        List<PivotRow> pivotRows = buildRowsWithNaturalOrderSortedLabels(valueRow1, valueRow2, valueRow3);
 
-        Function<Collection<Double>, Double> sum = this::sum;
+        Function<Collection<Double>, Double> sum = PivotFunctionUtils::sum;
 
-        pivotTree.build(rows);
+        pivotTree.build(pivotRows);
 
         // when
         List<String> queryLabels1 = List.of("blue");
 
         Double result1 = pivotTree.query(queryLabels1, sum);
 
-        //then
+        // then
         assertThat(result1)
                 .isNotNull()
                 .isEqualTo(0.0);
@@ -205,17 +247,17 @@ class PivotTreeTest {
     }
 
     @Test
-    void testQueryRoot_whenQueryLabelsAreEmpty() {
-        //given
+    void testQueryRoot_returnsRootWhenQueryLabelsAreEmpty() {
+        // given
         double valueRow1 = 10.0;
         double valueRow2 = 20.0;
         double valueRow3 = 30.0;
 
-        List<Row> rows = buildRowsWithEyesHairNationLabels(valueRow1, valueRow2, valueRow3);
+        List<PivotRow> pivotRows = buildRowsWithNaturalOrderSortedLabels(valueRow1, valueRow2, valueRow3);
 
-        Function<Collection<Double>, Double> sum = this::sum;
+        Function<Collection<Double>, Double> sum = PivotFunctionUtils::sum;
 
-        pivotTree.build(rows);
+        pivotTree.build(pivotRows);
 
         // when
         Double result3 = pivotTree.query(Collections.emptyList(), sum);
@@ -228,16 +270,16 @@ class PivotTreeTest {
 
     @Test
     void testQuery_throwsExceptionWhenQueryLabelsAreNull() {
-        //given
+        // given
         double valueRow1 = 10.0;
         double valueRow2 = 20.0;
         double valueRow3 = 30.0;
 
-        List<Row> rows = buildRowsWithEyesHairNationLabels(valueRow1, valueRow2, valueRow3);
+        List<PivotRow> pivotRows = buildRowsWithNaturalOrderSortedLabels(valueRow1, valueRow2, valueRow3);
 
-        Function<Collection<Double>, Double> sum = this::sum;
+        Function<Collection<Double>, Double> sum = PivotFunctionUtils::sum;
 
-        pivotTree.build(rows);
+        pivotTree.build(pivotRows);
 
         // when
         assertThatExceptionOfType(IllegalArgumentException.class)
@@ -246,23 +288,23 @@ class PivotTreeTest {
 
     @Test
     void testQuerySum() {
-        //given
+        // given
         double valueRow1 = 10.0;
         double valueRow2 = 20.0;
         double valueRow3 = 30.0;
 
-        List<Row> rows = buildRowsWithEyesHairNationLabels(valueRow1, valueRow2, valueRow3);
+        List<PivotRow> pivotRows = buildRowsWithNaturalOrderSortedLabels(valueRow1, valueRow2, valueRow3);
 
-        Function<Collection<Double>, Double> sum = this::sum;
+        Function<Collection<Double>, Double> sum = PivotFunctionUtils::sum;
 
-        pivotTree.build(rows);
+        pivotTree.build(pivotRows);
 
         // when
         List<String> queryLabels1 = List.of("brown");
 
         Double result1 = pivotTree.query(queryLabels1, sum);
 
-        //then
+        // then
         assertThat(result1)
                 .isNotNull()
                 .isEqualTo(valueRow1 + valueRow2 + valueRow3);
@@ -290,16 +332,16 @@ class PivotTreeTest {
 
     @Test
     void testQueryAverage() {
-        //given
+        // given
         double valueRow1 = 10.0;
         double valueRow2 = 20.0;
         double valueRow3 = 30.0;
 
-        List<Row> rows = buildRowsWithEyesHairNationLabels(valueRow1, valueRow2, valueRow3);
+        List<PivotRow> pivotRows = buildRowsWithNaturalOrderSortedLabels(valueRow1, valueRow2, valueRow3);
 
-        Function<Collection<Double>, Double> avg = this::average;
+        Function<Collection<Double>, Double> avg = PivotFunctionUtils::average;
 
-        pivotTree.build(rows);
+        pivotTree.build(pivotRows);
 
         // when
         List<String> queryLabels1 = List.of("brown");
@@ -316,7 +358,7 @@ class PivotTreeTest {
 
         Double result2 = pivotTree.query(queryLabels2, avg);
 
-        //then
+        // then
         assertThat(result2)
                 .isNotNull()
                 .isEqualTo((valueRow1 + valueRow3) / 2);
@@ -326,7 +368,7 @@ class PivotTreeTest {
 
         Double result4 = pivotTree.query(queryLabels4, avg);
 
-        //then
+        // then
         assertThat(result4)
                 .isNotNull()
                 .isEqualTo(valueRow2);
@@ -334,29 +376,29 @@ class PivotTreeTest {
 
     @Test
     void testQueryMode() {
-        //given
+        // given
         double valueRow1 = 10.0;
         double valueRow2 = 10.0;
         double valueRow3 = 30.0;
 
-        List<Row> rows = buildRowsWithEyesHairNationLabels(valueRow1, valueRow2, valueRow3);
+        List<PivotRow> pivotRows = buildRowsWithNaturalOrderSortedLabels(valueRow1, valueRow2, valueRow3);
 
-        Function<Collection<Double>, Double> mode = this::mode;
+        Function<Collection<Double>, Double> mode = PivotFunctionUtils::mode;
 
-        pivotTree.build(rows);
+        pivotTree.build(pivotRows);
 
         // when
         List<String> queryLabels1 = List.of("brown");
 
         Double result1 = pivotTree.query(queryLabels1, mode);
 
-        //then
+        // then
         assertThat(result1)
                 .isNotNull()
                 .isEqualTo(valueRow1);
     }
 
-    private List<Row> buildRowsWithEyesHairNationLabels(double valueRow1, double valueRow2, double valueRow3) {
+    private List<PivotRow> buildRowsWithNaturalOrderSortedLabels(double valueRow1, double valueRow2, double valueRow3) {
         List<List<String>> labelsRow1 = Arrays.asList(
                 List.of("eyes", "brown"),
                 List.of("hair", "dark"),
@@ -374,53 +416,19 @@ class PivotTreeTest {
                 List.of("nation", "italy")
         );
 
-        Row row1 = buildRow(labelsRow1, valueRow1);
-        Row row2 = buildRow(labelsRow2, valueRow2);
-        Row row3 = buildRow(labelsRow3, valueRow3);
-        return List.of(row1, row2, row3);
+        PivotRow pivotRow1 = buildRow(labelsRow1, valueRow1);
+        PivotRow pivotRow2 = buildRow(labelsRow2, valueRow2);
+        PivotRow pivotRow3 = buildRow(labelsRow3, valueRow3);
+        return List.of(pivotRow1, pivotRow2, pivotRow3);
     }
 
-    private Row buildRow(List<List<String>> labelsRow, Double value) {
+    private PivotRow buildRow(List<List<String>> labelsRow, Double value) {
         List<String> labels = new LinkedList<>();
 
         for (List<String> label : labelsRow) {
             labels.add(label.get(1));
         }
 
-        return new Row(labels, value);
-    }
-
-    private double sum(Collection<Double> values) {
-        double res = 0.0;
-        for (Double value : values) {
-            res += value;
-        }
-        return res;
-    }
-
-    private double average(Collection<Double> values) {
-        double sum = 0.0;
-        int i = 0;
-        for (Double value : values) {
-            sum += value;
-            i++;
-        }
-        return sum / i;
-    }
-
-    private double mode(Collection<Double> values) {
-        Map<Double, Integer> occurrences = new HashMap<>();
-        for (Double value : values) {
-            occurrences.put(value, occurrences.getOrDefault(value, 0) + 1);
-        }
-        double res = 0.0;
-        double max = Double.MIN_VALUE;
-        for (Double occurrence : occurrences.keySet()) {
-            if (occurrences.get(occurrence) > max) {
-                max = occurrences.get(occurrence);
-                res = occurrence;
-            }
-        }
-        return res;
+        return new PivotRow(labels, value);
     }
 }

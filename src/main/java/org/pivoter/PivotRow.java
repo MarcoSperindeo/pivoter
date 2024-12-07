@@ -2,12 +2,12 @@ package org.pivoter.model;
 
 import java.util.List;
 
-public class Row {
+public class PivotRow {
 
     private final List<String> labels;
     private final Double value; // Value
 
-    public Row(List<String> labels, Double value) {
+    public PivotRow(List<String> labels, Double value) {
         this.labels = labels;
         this.value = value;
     }

@@ -16,13 +16,13 @@ public class PivotTree {
         return root;
     }
 
-    public void build(List<Row> rows) {
-        if (rows == null) {
+    public void build(List<PivotRow> pivotRows) {
+        if (pivotRows == null) {
             throw new IllegalArgumentException("rows cannot be null");
         }
 
-        for (Row row : rows) {
-            List<String> sortedLabels = row.getLabels();
+        for (PivotRow pivotRow : pivotRows) {
+            List<String> sortedLabels = pivotRow.getLabels();
             sortedLabels.add(0, "root"); // ensure that "root" is the starting label
 
             PivotTreeNode node = root;
@@ -32,7 +32,7 @@ public class PivotTree {
                 // if current node does not have label, set it
                 if (node.getLabel() == null) node.setLabel(currentLabel);
 
-                node.addValue(row.getValue());
+                node.addValue(pivotRow.getValue());
 
                 if (sortedLabels.size() > 1) { // ensure leaf is not reached
                     String nextLabel = sortedLabels.get(1);
@@ -45,21 +45,21 @@ public class PivotTree {
         }
     }
 
-    void buildRecursive(List<Row> rows) {
-        if (rows == null) {
+    void buildRecursive(List<PivotRow> pivotRows) {
+        if (pivotRows == null) {
             throw new IllegalArgumentException("rows cannot be null");
         }
 
-        for (Row row : rows) {
-            List<String> sortedLabels = row.getLabels();
+        for (PivotRow pivotRow : pivotRows) {
+            List<String> sortedLabels = pivotRow.getLabels();
             sortedLabels.add(0, "root"); // ensure that "root" is the starting label
 
-            buildRecursive(root, sortedLabels, row);
+            buildRecursive(root, sortedLabels, pivotRow);
         }
     }
 
-    private void buildRecursive(PivotTreeNode node, List<String> sortedLabels, Row row) {
-        node.addValue(row.getValue());
+    private void buildRecursive(PivotTreeNode node, List<String> sortedLabels, PivotRow pivotRow) {
+        node.addValue(pivotRow.getValue());
 
         // leaf is reached
         if (sortedLabels.size() == 1) { // termination condition
@@ -76,7 +76,7 @@ public class PivotTree {
         PivotTreeNode child = node.getOrAddChild(nextLabel);
 
         // recur
-        buildRecursive(child, sortedLabels.subList(1, sortedLabels.size()), row);
+        buildRecursive(child, sortedLabels.subList(1, sortedLabels.size()), pivotRow);
     }
 
     public Double query(List<String> queryLabels, Function<Collection<Double>, Double> pivotFunction) {
