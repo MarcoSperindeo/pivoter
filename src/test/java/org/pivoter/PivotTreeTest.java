@@ -1,7 +1,7 @@
 package org.pivoter;
 
 import org.junit.jupiter.api.Test;
-import org.pivoter.utils.PivotFunctionUtils;
+import org.pivoter.utils.PivoterUtils;
 
 import java.util.*;
 import java.util.function.Function;
@@ -89,40 +89,6 @@ class PivotTreeTest {
         // given-when-then
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> pivotTree.build(null));
-    }
-
-    @Test
-    void testBuild_pivotRowsWithVariableSizeLabels() {
-        // given
-        double valueRow1 = 10.0;
-        double valueRow2 = 20.0;
-        double valueRow3 = 30.0;
-
-        List<List<String>> labelsRow1 = Arrays.asList(
-                List.of("eyes", "brown"),
-                List.of("hair", "dark"),
-                List.of("nation", "italy")
-        );
-        List<List<String>> labelsRow2 = Arrays.asList(
-                List.of("eyes", "brown"),
-                List.of("nation", "italy")
-        );
-
-        List<List<String>> labelsRow3 = Arrays.asList(
-                List.of("eyes", "brown"),
-                List.of("hair", "dark"),
-                List.of("nation", "italy")
-        );
-
-        PivotRow pivotRow1 = buildRow(labelsRow1, valueRow1);
-        PivotRow pivotRow2 = buildRow(labelsRow2, valueRow2);
-        PivotRow pivotRow3 = buildRow(labelsRow3, valueRow3);
-        List<PivotRow> pivotRows = List.of(pivotRow1, pivotRow2, pivotRow3);
-
-        // when
-        pivotTree.build(pivotRows);
-
-        System.out.println(pivotTree);
     }
 
     @Test
@@ -221,7 +187,7 @@ class PivotTreeTest {
 
         List<PivotRow> pivotRows = buildRowsWithNaturalOrderSortedLabels(valueRow1, valueRow2, valueRow3);
 
-        Function<Collection<Double>, Double> sum = PivotFunctionUtils::sum;
+        Function<Collection<Double>, Double> sum = PivoterUtils::sum;
 
         pivotTree.build(pivotRows);
 
@@ -255,7 +221,7 @@ class PivotTreeTest {
 
         List<PivotRow> pivotRows = buildRowsWithNaturalOrderSortedLabels(valueRow1, valueRow2, valueRow3);
 
-        Function<Collection<Double>, Double> sum = PivotFunctionUtils::sum;
+        Function<Collection<Double>, Double> sum = PivoterUtils::sum;
 
         pivotTree.build(pivotRows);
 
@@ -277,7 +243,7 @@ class PivotTreeTest {
 
         List<PivotRow> pivotRows = buildRowsWithNaturalOrderSortedLabels(valueRow1, valueRow2, valueRow3);
 
-        Function<Collection<Double>, Double> sum = PivotFunctionUtils::sum;
+        Function<Collection<Double>, Double> sum = PivoterUtils::sum;
 
         pivotTree.build(pivotRows);
 
@@ -295,7 +261,7 @@ class PivotTreeTest {
 
         List<PivotRow> pivotRows = buildRowsWithNaturalOrderSortedLabels(valueRow1, valueRow2, valueRow3);
 
-        Function<Collection<Double>, Double> sum = PivotFunctionUtils::sum;
+        Function<Collection<Double>, Double> sum = PivoterUtils::sum;
 
         pivotTree.build(pivotRows);
 
@@ -339,7 +305,7 @@ class PivotTreeTest {
 
         List<PivotRow> pivotRows = buildRowsWithNaturalOrderSortedLabels(valueRow1, valueRow2, valueRow3);
 
-        Function<Collection<Double>, Double> avg = PivotFunctionUtils::average;
+        Function<Collection<Double>, Double> avg = PivoterUtils::average;
 
         pivotTree.build(pivotRows);
 
@@ -383,7 +349,7 @@ class PivotTreeTest {
 
         List<PivotRow> pivotRows = buildRowsWithNaturalOrderSortedLabels(valueRow1, valueRow2, valueRow3);
 
-        Function<Collection<Double>, Double> mode = PivotFunctionUtils::mode;
+        Function<Collection<Double>, Double> mode = PivoterUtils::mode;
 
         pivotTree.build(pivotRows);
 

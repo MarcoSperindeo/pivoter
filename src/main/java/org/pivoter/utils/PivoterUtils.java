@@ -4,9 +4,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class PivotFunctionUtils {
+public class PivoterUtils {
 
-    public PivotFunctionUtils() {
+    public PivoterUtils() {
     }
 
     public static double sum(Collection<Double> values) {
@@ -41,5 +41,17 @@ public class PivotFunctionUtils {
             }
         }
         return res;
+    }
+
+    public static boolean isDouble(String str) {
+        if (str == null || str.isEmpty()) {
+            return false; // null or empty strings are not valid Doubles
+        }
+        try {
+            Double.parseDouble(str);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 }
