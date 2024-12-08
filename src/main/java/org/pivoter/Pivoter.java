@@ -1,5 +1,6 @@
 package org.pivoter;
 
+import org.pivoter.annotations.NotForUse;
 import org.pivoter.utils.PivoterUtils;
 
 import java.util.*;
@@ -8,59 +9,71 @@ import java.util.function.Function;
 public class Pivoter {
 
     private final PivotTree pivotTree;
-    private final Comparator<String> pivotOrder;
+    private Comparator<String> pivotHierarchy;
 
     public Pivoter() {
         this.pivotTree = new PivotTree();
-        this.pivotOrder = Comparator.naturalOrder();
+        this.pivotHierarchy = Comparator.naturalOrder();
     }
 
-    public Comparator<String> getPivotOrder() {
-        return pivotOrder;
+    public PivotTree getPivotTree() {
+        return pivotTree;
+    }
+
+    public Comparator<String> getPivotHierarchy() {
+        return pivotHierarchy;
+    }
+
+    public void setPivotHierarchy(Comparator<String> pivotHierarchy) {
+        this.pivotHierarchy = pivotHierarchy;
     }
 
     /**
-     * Builds a pivot tree from the provided data rows.
+     * Builds a pivot tree from the provided data rows using a natural order hierarchy.
      *
      * @param dataRows a list of data rows where each row is represented as a map of label-value pairs.
-     * @return the constructed pivot tree.
+     * @return the resulting pivot tree.
      * @throws IllegalArgumentException if the input data rows are invalid.
      */
-    public PivotTree pivot(List<Map<String, String>> dataRows) {
-        // build pivot rows from data rows
-        // validate data rows
-        // convert data rows in pivot rows
-        // build pivot tree from pivot rows
-        return pivotTree;
+    public void pivot(List<Map<String, String>> dataRows) {
+        validate(dataRows);
+        pivotTree.build(convert(dataRows));
     }
 
     /**
-     * Builds a pivot tree using the specified order for pivot labels.
+     * Builds a pivot tree from the provided data rows using the specified hierarchy.
      *
      * @param dataRows       a list of data rows where each row is represented as a map of label-value pairs.
-     * @param pivotOrder a comparator to specify the order of pivot labels.
-     * @return the constructed pivot tree.
-     * @throws IllegalArgumentException if the input data rows are invalid.
+     * @param pivotHierarchy a list of strings to specify the hierarchy of pivot labels.
+     * @return the resulting pivot tree.
+     * @throws IllegalArgumentException if the input data rows or pivot hierarchy are invalid.
      */
-    public PivotTree pivot(List<Map<String, String>> dataRows,
-                           Comparator<String> pivotOrder) {
-        // validate pivot order against data rows
+    public void pivot(List<Map<String, String>> dataRows,
+                      List<String> pivotHierarchy) {
         // validate data rows
+        validate(dataRows);
+        // validate pivot hierarchy against data rows
+        validatePivotHierarchy(pivotHierarchy, dataRows.get(0));
+        // builds pivot hierarchy comparator
+        // set pivot hierarchy
+        setPivotHierarchy(PivoterUtils.getHierarchyComparator(pivotHierarchy));
         // convert data rows in pivot rows w/ pivot order
         // build pivot tree from pivot rows
-        return pivotTree;
+        pivotTree.build(convert(dataRows));
+
     }
 
     /**
-     * Queries the pivot tree with the provided labels and function.
+     * Queries the pivot tree with the provided labels and aggregation function.
      *
      * @param queryLabels   the labels to query the pivot tree.
-     * @param pivotFunction the function to apply on the queried data.
+     * @param pivotFunction the aggregation function to apply on the queried data.
      * @return the result of the query.
      */
     public Double query(List<String> queryLabels,
                         Function<Collection<Double>, Double> pivotFunction) {
-        return null;
+        queryLabels.sort(this.pivotHierarchy);
+        return pivotTree.query(queryLabels, pivotFunction);
     }
 
     void validate(List<Map<String, String>> dataRows) {
@@ -74,9 +87,8 @@ public class Pivoter {
         for (Map<String, String> dataRow : dataRows) {
             validateDataRow(dataRow, labelsSize);
 
-            for (String label : dataRow.keySet()) {
+            for (String label : dataRow.keySet())
                 validateDataRowLabel(label, labels, dataRow);
-            }
         }
     }
 
@@ -84,27 +96,27 @@ public class Pivoter {
         List<PivotRow> pivotRows = new ArrayList<>();
 
         for (Map<String, String> dataRow : dataRows) {
-            List<String> sortedLabels = dataRow.keySet().stream().sorted().toList();
+            List<String> sortedLabels = dataRow.keySet().stream().sorted(this.pivotHierarchy).toList();
 
             PivotRow pivotRow = new PivotRow();
             for (String label : sortedLabels) {
                 String labelValue = dataRow.get(label);
-                if ("#".equals(label)) {
-                    pivotRow.setValue(Double.parseDouble(labelValue));
-                } else {
-                    pivotRow.addLabel(labelValue);
-                }
+
+                if ("#".equals(label)) pivotRow.setValue(Double.parseDouble(labelValue));
+                else pivotRow.addLabel(labelValue);
             }
             pivotRows.add(pivotRow);
         }
         return pivotRows;
     }
 
-    // does not adhere to SRP, but it is more efficient,
-    // having O(n * log m * m) rather than 2 * (O(n * log m * m)) complexity,
-    // where n = #rows, m = #labels
-    @Deprecated
-    private List<PivotRow> validateAndConvert(List<Map<String, String>> dataRows) {
+    /**
+     * does not adhere to SRP, but is more efficient,
+     * having O(n * log(m) * m) complexity rather than 2 * (O(n * log(m) * m)) complexity,
+     * where n = #rows, m = #labels
+     */
+    @NotForUse(reason = "Does not adhere to Single Responsibility Principle")
+    private List<PivotRow> validateAndConvert(List<Map<String, String>> dataRows, List<String> pivotHierarchy) {
         if (dataRows == null || dataRows.isEmpty()) {
             throw new IllegalArgumentException("Input data rows cannot be null or empty. Ensure that you provide a list of data rows.");
         }
@@ -115,31 +127,35 @@ public class Pivoter {
         List<PivotRow> pivotRows = new ArrayList<>();
 
         for (Map<String, String> dataRow : dataRows) {
-
             validateDataRow(dataRow, labelsSize);
-
-            List<String> sortedLabels = dataRow.keySet().stream().sorted().toList();
+            List<String> sortedLabels = dataRow.keySet().stream().sorted(this.pivotHierarchy).toList();
 
             PivotRow pivotRow = new PivotRow();
-
             for (String label : sortedLabels) {
-
                 validateDataRowLabel(label, labels, dataRow);
 
                 String labelValue = dataRow.get(label);
-                if ("#".equals(label))
-                    pivotRow.setValue(Double.parseDouble(labelValue));
-                else
-                    pivotRow.addLabel(labelValue);
+                if ("#".equals(label)) pivotRow.setValue(Double.parseDouble(labelValue));
+                else pivotRow.addLabel(labelValue);
             }
 
             pivotRows.add(pivotRow);
         }
+
+        for (String hierarchy : pivotHierarchy)
+            if (!dataRows.get(0).containsKey(hierarchy))
+                throw new IllegalArgumentException("Pivot hierarchy " + hierarchy + " is not valid against the provided data rows.");
+
         return pivotRows;
     }
 
-    private void validateDataRow(Map<String, String> dataRow, int labelsSize) { // map prevents duplicated labels
+    private void validatePivotHierarchy(List<String> pivotHierarchy, Map<String, String> dataRow) {
+        for (String hierarchy : pivotHierarchy)
+            if (!dataRow.containsKey(hierarchy))
+                throw new IllegalArgumentException("Pivot hierarchy " + hierarchy + " is not valid against the provided data rows.");
+    }
 
+    private void validateDataRow(Map<String, String> dataRow, int labelsSize) { // map prevents duplicated labels
         if (labelsSize != dataRow.keySet().size()) {
             throw new IllegalArgumentException(String.format(
                     "Inconsistent number of labels in the data row. Expected %d labels, but found %d: %s",

@@ -1,13 +1,42 @@
 package org.pivoter.utils;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class PivoterUtils {
 
     public PivoterUtils() {
     }
+
+    public static boolean isDouble(String str) {
+        if (str == null || str.isEmpty()) {
+            return false; // null or empty strings are not valid Doubles
+        }
+        try {
+            Double.parseDouble(str);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    /********** pivot hierarchy **********/
+
+    public static Comparator<String> getHierarchyComparator(List<String> pivotHierarchy) {
+        return (s1, s2) -> {
+            // ensure both strings are valid
+            if (!pivotHierarchy.contains(s1)) {
+                throw new IllegalArgumentException("Invalid string: " + s1);
+            }
+            if (!pivotHierarchy.contains(s2)) {
+                throw new IllegalArgumentException("Invalid string: " + s2);
+            }
+
+            // compare based on the pivot hierarchy
+            return Integer.compare(pivotHierarchy.indexOf(s1), pivotHierarchy.indexOf(s2));
+        };
+    }
+
+    /********** custom aggregation functions **********/
 
     public static double sum(Collection<Double> values) {
         double res = 0.0;
@@ -41,17 +70,5 @@ public class PivoterUtils {
             }
         }
         return res;
-    }
-
-    public static boolean isDouble(String str) {
-        if (str == null || str.isEmpty()) {
-            return false; // null or empty strings are not valid Doubles
-        }
-        try {
-            Double.parseDouble(str);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
     }
 }

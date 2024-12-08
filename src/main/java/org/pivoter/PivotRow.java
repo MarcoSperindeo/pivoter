@@ -13,11 +13,7 @@ public class PivotRow {
         value = null;
     }
 
-    public PivotRow(Double value) {
-        this.labels = new ArrayList<>();
-        this.value = value;
-    }
-
+    // quick-construction for unit testing
     PivotRow(List<String> labels, Double value) {
         this.labels = labels;
         this.value = value;

@@ -1,11 +1,9 @@
 package org.pivoter;
 
 import org.junit.jupiter.api.Test;
+import org.pivoter.utils.PivoterUtils;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -31,24 +29,6 @@ class PivoterTest {
     }
 
     @Test
-    void testValidate_throwsIfValueLabelIsNotANumber() {
-        // given
-        String dataRowValue1 = "M";
-        Double dataRowValue2 = 20.0;
-        Double dataRowValue3 = 30.0;
-
-        List<Map<String, String>> dataRows = Arrays.asList(
-                Map.of("eyes", "brown", "hair", "dark", "nation", "italy", "#", dataRowValue1),
-                Map.of("eyes", "brown", "hair", "dark", "nation", "italy", "#", dataRowValue2.toString()),
-                Map.of("eyes", "brown", "hair", "dark", "nation", "italy", "#", dataRowValue3.toString())
-        );
-        // when-then
-        assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> pivoter.validate(dataRows))
-                .withMessage("Invalid numerical value for label '#': '" + dataRowValue1 + "'. The value must be a valid Double.");
-    }
-
-    @Test
     void testValidate_throwsIfLabelsSizeIsNotFixed() {
         // given
         Double dataRowValue1 = 10.0;
@@ -64,6 +44,24 @@ class PivoterTest {
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> pivoter.validate(dataRows))
                 .withMessageContaining("Inconsistent number of labels in the data row. Expected 4 labels, but found 3:");
+    }
+
+    @Test
+    void testValidate_throwsIfValueLabelIsNotANumber() {
+        // given
+        String dataRowValue1 = "M";
+        Double dataRowValue2 = 20.0;
+        Double dataRowValue3 = 30.0;
+
+        List<Map<String, String>> dataRows = Arrays.asList(
+                Map.of("eyes", "brown", "hair", "dark", "nation", "italy", "#", dataRowValue1),
+                Map.of("eyes", "brown", "hair", "dark", "nation", "italy", "#", dataRowValue2.toString()),
+                Map.of("eyes", "brown", "hair", "dark", "nation", "italy", "#", dataRowValue3.toString())
+        );
+        // when-then
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> pivoter.validate(dataRows))
+                .withMessage("Invalid numerical value for label '#': '" + dataRowValue1 + "'. The value must be a valid Double.");
     }
 
     @Test
@@ -99,6 +97,30 @@ class PivoterTest {
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> pivoter.validate(dataRows))
                 .withMessageContaining("Data row contains empty or blank labels:");
+    }
+
+    @Test
+    void testValidate_throwsIfNullLabelValue() {
+        // given
+        Double dataRowValue1 = 10.0;
+        Double dataRowValue2 = 20.0;
+        Double dataRowValue3 = 30.0;
+
+        HashMap<String, String> dataRow1 = new HashMap<>();
+        dataRow1.put("eyes", "brown");
+        dataRow1.put("hair", "dark");
+        dataRow1.put("nation", null);
+        dataRow1.put("#", dataRowValue1.toString());
+
+        List<Map<String, String>> dataRows = Arrays.asList(
+                dataRow1,
+                Map.of("eyes", "brown", "hair", "dark", "nation", "italy", "#", dataRowValue2.toString()),
+                Map.of("eyes", "brown", "hair", "dark", "nation", "italy", "#", dataRowValue3.toString())
+        );
+        // when-then
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> pivoter.validate(dataRows))
+                .withMessageContaining("All labels must have non-null values.");
     }
 
     @Test
@@ -223,5 +245,33 @@ class PivoterTest {
         assertThat(pivotRows.get(2).getValue()).isNotNull().isEqualTo(dataRowValue3);
         assertThat(pivotRows.get(2).getLabels().get(2)).isNotNull().isEqualTo("italy");
         assertThat(pivotRows.get(2).getValue()).isNotNull().isEqualTo(dataRowValue3);
+    }
+
+    @Test
+    void testPivot_average() {
+        // given
+        Double dataRowValue1 = 10.0;
+        Double dataRowValue2 = 20.0;
+        Double dataRowValue3 = 30.0;
+
+        List<Map<String, String>> dataRows = Arrays.asList(
+                Map.of("eyes", "brown", "hair", "dark", "nation", "italy", "#", dataRowValue1.toString()),
+                Map.of("eyes", "blue", "hair", "blonde", "nation", "italy", "#", dataRowValue2.toString()),
+                Map.of("eyes", "blue", "hair", "dark", "nation", "italy", "#", dataRowValue3.toString())
+        );
+
+        // when
+        pivoter.pivot(dataRows);
+
+        // then
+        System.out.println(pivoter.getPivotTree());
+
+        // when
+        String queryLabel1 = "blue";
+        List<String> queryLabels = new ArrayList<>(List.of(queryLabel1));
+        Double result = pivoter.query(queryLabels, PivoterUtils::average);
+
+        // then
+        System.out.println(queryLabels + " average: " + result);
     }
 }

@@ -114,8 +114,9 @@ public class PivotTree {
 
         StringBuilder tree = new StringBuilder();
         tree.append("\n");
-        tree.append(indent).append(node.getLabel())
-                .append(" (").append(node.getValues()).append(")");
+        tree.append(indent)
+                .append(node.getLabel())
+                .append(node.getValues());
 
         for (PivotTreeNode child : node.getChildren().values()) {
             tree.append(toStringRecursive(child, indent + "  "));

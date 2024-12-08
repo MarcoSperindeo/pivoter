@@ -31,20 +31,14 @@ class PivotTreeTest {
         assertThat(root).isNotNull();
         assertThat(root.getLabel()).isEqualTo("root");
         assertThat(root.getValues()).isEqualTo(List.of(valueRow1, valueRow2, valueRow3));
-        assertThat(root.getChildren())
-                .isNotNull()
-                .isNotEmpty()
-                .hasSize(1);
+        assertThat(root.getChildren()).isNotNull().isNotEmpty().hasSize(1);
         PivotTreeNode brown = root.getChild("brown");
         assertThat(brown).isNotNull();
 
         // assert brown label, value, children
         assertThat(brown.getLabel()).isEqualTo("brown");
         assertThat(brown.getValues()).isEqualTo(List.of(valueRow1, valueRow2, valueRow3));
-        assertThat(brown.getChildren())
-                .isNotNull()
-                .isNotEmpty()
-                .hasSize(2);
+        assertThat(brown.getChildren()).isNotNull().isNotEmpty().hasSize(2);
         PivotTreeNode dark = brown.getChild("dark");
         assertThat(dark).isNotNull();
         PivotTreeNode blonde = brown.getChild("blonde");
@@ -53,10 +47,7 @@ class PivotTreeTest {
         // assert dark label, value, children
         assertThat(dark.getLabel()).isEqualTo("dark");
         assertThat(dark.getValues()).isEqualTo(List.of(valueRow1, valueRow3));
-        assertThat(dark.getChildren())
-                .isNotNull()
-                .isNotEmpty()
-                .hasSize(1);
+        assertThat(dark.getChildren()).isNotNull().isNotEmpty().hasSize(1);
 
         PivotTreeNode darkItaly = dark.getChild("italy");
         assertThat(darkItaly).isNotNull();
@@ -64,17 +55,12 @@ class PivotTreeTest {
         // assert dark-italy label, value, children
         assertThat(darkItaly.getLabel()).isEqualTo("italy");
         assertThat(darkItaly.getValues()).isEqualTo(List.of(valueRow1, valueRow3));
-        assertThat(darkItaly.getChildren())
-                .isNotNull()
-                .isEmpty();
+        assertThat(darkItaly.getChildren()).isNotNull().isEmpty();
 
         // assert blonde label, value, children
         assertThat(blonde.getLabel()).isEqualTo("blonde");
         assertThat(blonde.getValues()).isEqualTo(List.of(valueRow2));
-        assertThat(blonde.getChildren())
-                .isNotNull()
-                .isNotEmpty()
-                .hasSize(1);
+        assertThat(blonde.getChildren()).isNotNull().isNotEmpty().hasSize(1);
         PivotTreeNode blondeItaly = blonde.getChild("italy");
         assertThat(blondeItaly).isNotNull();
 
@@ -110,20 +96,14 @@ class PivotTreeTest {
         assertThat(root).isNotNull();
         assertThat(root.getLabel()).isEqualTo("root");
         assertThat(root.getValues()).isEqualTo(List.of(valueRow1, valueRow2, valueRow3));
-        assertThat(root.getChildren())
-                .isNotNull()
-                .isNotEmpty()
-                .hasSize(1);
+        assertThat(root.getChildren()).isNotNull().isNotEmpty().hasSize(1);
         PivotTreeNode brown = root.getChild("brown");
         assertThat(brown).isNotNull();
 
         // assert brown label, value, children
         assertThat(brown.getLabel()).isEqualTo("brown");
         assertThat(brown.getValues()).isEqualTo(List.of(valueRow1, valueRow2, valueRow3));
-        assertThat(brown.getChildren())
-                .isNotNull()
-                .isNotEmpty()
-                .hasSize(2);
+        assertThat(brown.getChildren()).isNotNull().isNotEmpty().hasSize(2);
         PivotTreeNode dark = brown.getChild("dark");
         assertThat(dark).isNotNull();
         PivotTreeNode blonde = brown.getChild("blonde");
@@ -132,10 +112,7 @@ class PivotTreeTest {
         // assert dark label, value, children
         assertThat(dark.getLabel()).isEqualTo("dark");
         assertThat(dark.getValues()).isEqualTo(List.of(valueRow1, valueRow3));
-        assertThat(dark.getChildren())
-                .isNotNull()
-                .isNotEmpty()
-                .hasSize(1);
+        assertThat(dark.getChildren()).isNotNull().isNotEmpty().hasSize(1);
 
         PivotTreeNode darkItaly = dark.getChild("italy");
         assertThat(darkItaly).isNotNull();
@@ -143,17 +120,12 @@ class PivotTreeTest {
         // assert dark-italy label, value, children
         assertThat(darkItaly.getLabel()).isEqualTo("italy");
         assertThat(darkItaly.getValues()).isEqualTo(List.of(valueRow1, valueRow3));
-        assertThat(darkItaly.getChildren())
-                .isNotNull()
-                .isEmpty();
+        assertThat(darkItaly.getChildren()).isNotNull().isEmpty();
 
         // assert blonde label, value, children
         assertThat(blonde.getLabel()).isEqualTo("blonde");
         assertThat(blonde.getValues()).isEqualTo(List.of(valueRow2));
-        assertThat(blonde.getChildren())
-                .isNotNull()
-                .isNotEmpty()
-                .hasSize(1);
+        assertThat(blonde.getChildren()).isNotNull().isNotEmpty().hasSize(1);
         PivotTreeNode blondeItaly = blonde.getChild("italy");
         assertThat(blondeItaly).isNotNull();
 
@@ -253,7 +225,7 @@ class PivotTreeTest {
     }
 
     @Test
-    void testQuerySum() {
+    void testQuery_sum() {
         // given
         double valueRow1 = 10.0;
         double valueRow2 = 20.0;
@@ -297,7 +269,7 @@ class PivotTreeTest {
     }
 
     @Test
-    void testQueryAverage() {
+    void testQuery_average() {
         // given
         double valueRow1 = 10.0;
         double valueRow2 = 20.0;
@@ -341,7 +313,7 @@ class PivotTreeTest {
     }
 
     @Test
-    void testQueryMode() {
+    void testQuery_mode() {
         // given
         double valueRow1 = 10.0;
         double valueRow2 = 10.0;
