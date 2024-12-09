@@ -23,6 +23,7 @@ public class PivoterUtils {
 
     public static Comparator<String> getHierarchyComparator(List<String> pivotHierarchy) {
         return (s1, s2) -> {
+            pivotHierarchy.add("#");
             // ensure both strings are valid
             if (!pivotHierarchy.contains(s1)) {
                 throw new IllegalArgumentException("Invalid string: " + s1);

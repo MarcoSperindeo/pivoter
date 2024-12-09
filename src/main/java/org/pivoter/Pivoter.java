@@ -8,7 +8,7 @@ import java.util.function.Function;
 
 public class Pivoter {
 
-    private final PivotTree pivotTree;
+    private PivotTree pivotTree;
     private Comparator<String> pivotHierarchy;
 
     public Pivoter() {
@@ -18,10 +18,6 @@ public class Pivoter {
 
     public PivotTree getPivotTree() {
         return pivotTree;
-    }
-
-    public Comparator<String> getPivotHierarchy() {
-        return pivotHierarchy;
     }
 
     public void setPivotHierarchy(Comparator<String> pivotHierarchy) {
@@ -36,6 +32,7 @@ public class Pivoter {
      * @throws IllegalArgumentException if the input data rows are invalid.
      */
     public void pivot(List<Map<String, String>> dataRows) {
+        this.pivotTree = new PivotTree();
         validate(dataRows);
         pivotTree.build(convert(dataRows));
     }
@@ -44,21 +41,16 @@ public class Pivoter {
      * Builds a pivot tree from the provided data rows using the specified hierarchy.
      *
      * @param dataRows       a list of data rows where each row is represented as a map of label-value pairs.
-     * @param pivotHierarchy a list of strings to specify the hierarchy of pivot labels.
+     * @param pivotHierarchy a set of strings to specify the hierarchy of pivot labels.
      * @return the resulting pivot tree.
      * @throws IllegalArgumentException if the input data rows or pivot hierarchy are invalid.
      */
     public void pivot(List<Map<String, String>> dataRows,
                       List<String> pivotHierarchy) {
-        // validate data rows
+        this.pivotTree = new PivotTree();
         validate(dataRows);
-        // validate pivot hierarchy against data rows
         validatePivotHierarchy(pivotHierarchy, dataRows.get(0));
-        // builds pivot hierarchy comparator
-        // set pivot hierarchy
-        setPivotHierarchy(PivoterUtils.getHierarchyComparator(pivotHierarchy));
-        // convert data rows in pivot rows w/ pivot order
-        // build pivot tree from pivot rows
+        setPivotHierarchy(PivoterUtils.getHierarchyComparator(new ArrayList<>(pivotHierarchy)));
         pivotTree.build(convert(dataRows));
 
     }
@@ -72,8 +64,9 @@ public class Pivoter {
      */
     public Double query(List<String> queryLabels,
                         Function<Collection<Double>, Double> pivotFunction) {
-        queryLabels.sort(this.pivotHierarchy);
-        return pivotTree.query(queryLabels, pivotFunction);
+        List<String> deepQueryLabels = new ArrayList<>(queryLabels);
+        deepQueryLabels.sort(this.pivotHierarchy);
+        return pivotTree.query(deepQueryLabels, pivotFunction);
     }
 
     void validate(List<Map<String, String>> dataRows) {
@@ -150,9 +143,20 @@ public class Pivoter {
     }
 
     private void validatePivotHierarchy(List<String> pivotHierarchy, Map<String, String> dataRow) {
-        for (String hierarchy : pivotHierarchy)
+        String previousHierarchy = null;
+        for (String hierarchy : pivotHierarchy) {
             if (!dataRow.containsKey(hierarchy))
-                throw new IllegalArgumentException("Pivot hierarchy " + hierarchy + " is not valid against the provided data rows.");
+                throw new IllegalArgumentException("Pivot hierarchy '" + hierarchy + "' is not valid against the provided data rows.");
+
+            if ("#".equals(hierarchy))
+                throw new IllegalArgumentException("Pivot hierarchy '" + hierarchy + "' is not valid.");
+
+            if (hierarchy.equals(previousHierarchy)) {
+                throw new IllegalArgumentException("Pivot hierarchy '" + hierarchy + "' is duplicated.");
+            }
+
+            previousHierarchy = hierarchy;
+        }
     }
 
     private void validateDataRow(Map<String, String> dataRow, int labelsSize) { // map prevents duplicated labels

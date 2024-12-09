@@ -361,7 +361,7 @@ class PivotTreeTest {
     }
 
     private PivotRow buildRow(List<List<String>> labelsRow, Double value) {
-        List<String> labels = new LinkedList<>();
+        List<String> labels = new ArrayList<>();
 
         for (List<String> label : labelsRow) {
             labels.add(label.get(1));

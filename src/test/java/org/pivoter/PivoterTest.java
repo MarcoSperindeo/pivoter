@@ -1,5 +1,6 @@
 package org.pivoter;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.pivoter.utils.PivoterUtils;
 
@@ -65,7 +66,7 @@ class PivoterTest {
     }
 
     @Test
-    void testValidate_throwsIfValueLabelIsMissing() {
+    void testValidate_throwsIfHashLabelIsMissing() {
         // given
         Double dataRowValue2 = 20.0;
         Double dataRowValue3 = 30.0;
@@ -142,7 +143,7 @@ class PivoterTest {
     }
 
     @Test
-    void testConvert_convertsToPivotRowsWithSortedLabels() {
+    void testConvert_convertsToSortedPivotRowsWithSortedLabels() {
         // given
         Double dataRowValue1 = 10.0;
         Double dataRowValue2 = 20.0;
@@ -195,7 +196,7 @@ class PivoterTest {
     }
 
     @Test
-    void testConvert_convertsSortedPivotRowsWithNonSortedLabels() {
+    void testConvert_convertsToSortedPivotRowsWithNonSortedLabels() {
         // given
         Double dataRowValue1 = 10.0;
         Double dataRowValue2 = 20.0;
@@ -248,7 +249,7 @@ class PivoterTest {
     }
 
     @Test
-    void testPivot_average() {
+    void testPivot_averageWithNaturalOrderHierarchy() {
         // given
         Double dataRowValue1 = 10.0;
         Double dataRowValue2 = 20.0;
@@ -264,14 +265,78 @@ class PivoterTest {
         pivoter.pivot(dataRows);
 
         // then
-        System.out.println(pivoter.getPivotTree());
-
-        // when
         String queryLabel1 = "blue";
-        List<String> queryLabels = new ArrayList<>(List.of(queryLabel1));
+        List<String> queryLabels = List.of(queryLabel1);
         Double result = pivoter.query(queryLabels, PivoterUtils::average);
 
+        assertThat(result).isNotNull().isEqualTo((dataRowValue2 + dataRowValue3)/2);
+    }
+
+    @Test
+    void validatePivotHierarchy_throwsIfNotValidAgainstDataRows() {
+    }
+
+    @Test
+    void validatePivotHierarchy_throwsIfContainsHash() {
+    }
+
+    @Test
+    void validatePivotHierarchy_throwsIfDuplicatedElement() {
+    }
+
+    @Test
+    void testPivot_averageWithCustomHierarchyA() {
+        // given
+        Double dataRowValue1 = 10.0;
+        Double dataRowValue2 = 20.0;
+        Double dataRowValue3 = 30.0;
+
+        List<Map<String, String>> dataRows1 = Arrays.asList(
+                Map.of("eyes", "brown", "hair", "dark", "nation", "italy", "#", dataRowValue1.toString()),
+                Map.of("eyes", "blue", "hair", "blonde", "nation", "italy", "#", dataRowValue2.toString()),
+                Map.of("eyes", "blue", "hair", "dark", "nation", "italy", "#", dataRowValue3.toString())
+        );
+
+        List<String> pivotHierarchy1 = List.of("hair", "eyes", "nation");
+
+        // when
+        pivoter.pivot(dataRows1, pivotHierarchy1);
+
+        System.out.println(pivoter.getPivotTree());
+
         // then
-        System.out.println(queryLabels + " average: " + result);
+        String queryLabel11 = "dark";
+        List<String> queryLabels1 = List.of(queryLabel11);
+        Double result1 = pivoter.query(queryLabels1, PivoterUtils::average);
+
+        assertThat(result1).isNotNull().isEqualTo((dataRowValue1 + dataRowValue3)/2);
+    }
+
+    @Test
+    void testPivot_averageWithCustomHierarchyB() {
+        // given
+        Double dataRowValue1 = 10.0;
+        Double dataRowValue2 = 20.0;
+        Double dataRowValue3 = 30.0;
+
+        List<Map<String, String>> dataRows2 = Arrays.asList(
+                Map.of("eyes", "brown", "hair", "dark", "nation", "italy", "#", dataRowValue1.toString()),
+                Map.of("eyes", "blue", "hair", "blonde", "nation", "italy", "#", dataRowValue2.toString()),
+                Map.of("eyes", "blue", "hair", "dark", "nation", "italy", "#", dataRowValue3.toString())
+        );
+
+        List<String> pivotHierarchy2 = List.of("nation", "hair", "eyes");
+
+        // when
+        pivoter.pivot(dataRows2, pivotHierarchy2);
+
+        System.out.println(pivoter.getPivotTree());
+
+        // then
+        String queryLabel12 = "italy";
+        List<String> queryLabels2 = List.of(queryLabel12);
+        Double result2 = pivoter.query(queryLabels2, PivoterUtils::average);
+
+        assertThat(result2).isNotNull().isEqualTo((dataRowValue1 + dataRowValue2 + dataRowValue3)/3);
     }
 }
