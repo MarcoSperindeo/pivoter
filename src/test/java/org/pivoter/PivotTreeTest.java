@@ -185,7 +185,7 @@ class PivotTreeTest {
     }
 
     @Test
-    void testQueryRoot_returnsRootWhenQueryLabelsAreEmpty() {
+    void testQueryRoot_aggregatesRootWhenQueryLabelsAreEmpty() {
         // given
         double valueRow1 = 10.0;
         double valueRow2 = 20.0;

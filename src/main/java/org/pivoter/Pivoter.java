@@ -5,23 +5,24 @@ import org.pivoter.utils.PivoterUtils;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.stream.IntStream;
 
 public class Pivoter {
 
     private PivotTree pivotTree;
-    private Comparator<String> pivotHierarchy;
+    private Comparator<String> pivotHierarchyComparator;
 
     public Pivoter() {
         this.pivotTree = new PivotTree();
-        this.pivotHierarchy = Comparator.naturalOrder();
+        this.pivotHierarchyComparator = Comparator.naturalOrder();
     }
 
     public PivotTree getPivotTree() {
         return pivotTree;
     }
 
-    public void setPivotHierarchy(Comparator<String> pivotHierarchy) {
-        this.pivotHierarchy = pivotHierarchy;
+    public void setPivotHierarchyComparator(Comparator<String> pivotHierarchyComparator) {
+        this.pivotHierarchyComparator = pivotHierarchyComparator;
     }
 
     /**
@@ -33,8 +34,10 @@ public class Pivoter {
      */
     public void pivot(List<Map<String, String>> dataRows) {
         this.pivotTree = new PivotTree();
-        validate(dataRows);
-        pivotTree.build(convert(dataRows));
+        this.pivotHierarchyComparator = Comparator.naturalOrder();
+
+        validateDataRows(dataRows);
+        pivotTree.build(convert(dataRows)); // O(m * n) complexity, where n = #rows, m = #labels
     }
 
     /**
@@ -48,11 +51,11 @@ public class Pivoter {
     public void pivot(List<Map<String, String>> dataRows,
                       List<String> pivotHierarchy) {
         this.pivotTree = new PivotTree();
-        validate(dataRows);
-        validatePivotHierarchy(pivotHierarchy, dataRows.get(0));
-        setPivotHierarchy(PivoterUtils.getHierarchyComparator(new ArrayList<>(pivotHierarchy)));
-        pivotTree.build(convert(dataRows));
 
+        validateDataRows(dataRows);
+        validatePivotHierarchy(pivotHierarchy, dataRows.get(0));
+        setPivotHierarchyComparator(getHierarchyComparator(new ArrayList<>(pivotHierarchy)));
+        pivotTree.build(convert(dataRows)); // O(m * n) complexity, where n = #rows, m = #labels
     }
 
     /**
@@ -61,18 +64,19 @@ public class Pivoter {
      * @param queryLabels   the labels to query the pivot tree.
      * @param pivotFunction the aggregation function to apply on the queried data.
      * @return the result of the query.
+     * @throws IllegalArgumentException if the input query labels are null.
      */
     public Double query(List<String> queryLabels,
                         Function<Collection<Double>, Double> pivotFunction) {
+        validateQueryLabels(queryLabels);
         List<String> deepQueryLabels = new ArrayList<>(queryLabels);
-        deepQueryLabels.sort(this.pivotHierarchy);
-        return pivotTree.query(deepQueryLabels, pivotFunction);
+        deepQueryLabels.sort(this.pivotHierarchyComparator);
+        return pivotTree.query(deepQueryLabels, pivotFunction); // O(m * n) complexity, where n = #rows, m = #labels
     }
 
-    void validate(List<Map<String, String>> dataRows) {
-        if (dataRows == null || dataRows.isEmpty()) {
-            throw new IllegalArgumentException("Input data rows cannot be null or empty. Ensure that you provide a list of data rows.");
-        }
+    void validateDataRows(List<Map<String, String>> dataRows) {
+        if (dataRows == null || dataRows.isEmpty())
+            throw new IllegalArgumentException("dataRows cannot be null or empty. Ensure that you provide a valid list of dataRows.");
 
         List<String> labels = new ArrayList<>(dataRows.get(0).keySet());
         int labelsSize = labels.size();
@@ -85,11 +89,73 @@ public class Pivoter {
         }
     }
 
+    private void validateDataRow(Map<String, String> dataRow, int labelsSize) { // map prevents duplicated labels
+        if (labelsSize != dataRow.keySet().size())
+            throw new IllegalArgumentException(String.format(
+                    "Inconsistent number of labels in dataRow. Expected %d labels, but found %d: %s",
+                    labelsSize, dataRow.keySet().size(), dataRow));
+
+        if (!dataRow.containsKey("#"))
+            throw new IllegalArgumentException("Each dataRow must contain a label '#' for the numerical value.");
+
+        if (!PivoterUtils.isDouble(dataRow.get("#")))
+            throw new IllegalArgumentException(String.format(
+                    "Invalid numerical value for label '#': '%s'. The value must be a valid Double.", dataRow.get("#")));
+    }
+
+    private void validateDataRowLabel(String label, List<String> labels, Map<String, String> dataRow) {
+        if (label.isEmpty() || label.isBlank())
+            throw new IllegalArgumentException(String.format(
+                    "dataRow contains empty or blank labels: %s. Labels must be non-empty strings.", dataRow));
+
+        if (dataRow.get(label) == null)
+            throw new IllegalArgumentException(String.format(
+                    "dataRow %s contains a null value for label '%s'. All labels must have non-null values.", dataRow, label));
+
+        if (!"#".equals(label) && !labels.contains(label))
+            throw new IllegalArgumentException(String.format(
+                    "Label '%s' in dataRow %s does not match the consistent set of labels: %s", label, dataRow, labels));
+    }
+
+    private void validatePivotHierarchy(List<String> pivotHierarchy, Map<String, String> dataRow) {
+        Set<Object> seen = new HashSet<>();
+        for (String label : pivotHierarchy) {
+            if (!dataRow.containsKey(label))
+                throw new IllegalArgumentException("pivotHierarchy '" + label + "' is not consistent with the provided dataRow.");
+
+            if ("#".equals(label))
+                throw new IllegalArgumentException("pivotHierarchy label '" + label + "' is not valid.");
+
+            if (!seen.add(label))
+                throw new IllegalArgumentException("pivotHierarchy cannot contain duplicates");
+        }
+    }
+
+    private void validateQueryLabels(List<String> queryLabels) {
+        if (queryLabels == null)
+            throw new IllegalArgumentException("queryLabels cannot be null.");
+    }
+
+    private Comparator<String> getHierarchyComparator(List<String> pivotHierarchy) {
+        return (s1, s2) -> {
+            pivotHierarchy.add("#");
+            // ensure both strings are valid
+            if (!pivotHierarchy.contains(s1))
+                throw new IllegalArgumentException("Invalid String: " + s1);
+
+            if (!pivotHierarchy.contains(s2))
+                throw new IllegalArgumentException("Invalid String: " + s2);
+
+            // compare based on the pivot hierarchy
+            return Integer.compare(pivotHierarchy.indexOf(s1), pivotHierarchy.indexOf(s2));
+        };
+    }
+
     List<PivotRow> convert(List<Map<String, String>> dataRows) {
         List<PivotRow> pivotRows = new ArrayList<>();
 
         for (Map<String, String> dataRow : dataRows) {
-            List<String> sortedLabels = dataRow.keySet().stream().sorted(this.pivotHierarchy).toList();
+            List<String> sortedLabels = dataRow.keySet().stream().sorted(this.pivotHierarchyComparator).toList();
 
             PivotRow pivotRow = new PivotRow();
             for (String label : sortedLabels) {
@@ -109,10 +175,9 @@ public class Pivoter {
      * where n = #rows, m = #labels
      */
     @NotForUse(reason = "Does not adhere to Single Responsibility Principle")
-    private List<PivotRow> validateAndConvert(List<Map<String, String>> dataRows, List<String> pivotHierarchy) {
-        if (dataRows == null || dataRows.isEmpty()) {
-            throw new IllegalArgumentException("Input data rows cannot be null or empty. Ensure that you provide a list of data rows.");
-        }
+    List<PivotRow> validateAndConvert(List<Map<String, String>> dataRows, List<String> pivotHierarchy) {
+        if (dataRows == null || dataRows.isEmpty())
+            throw new IllegalArgumentException("dataRows cannot be null or empty. Ensure that you provide a valid list of dataRows.");
 
         List<String> labels = new ArrayList<>(dataRows.get(0).keySet());
         int labelsSize = labels.size();
@@ -121,7 +186,7 @@ public class Pivoter {
 
         for (Map<String, String> dataRow : dataRows) {
             validateDataRow(dataRow, labelsSize);
-            List<String> sortedLabels = dataRow.keySet().stream().sorted(this.pivotHierarchy).toList();
+            List<String> sortedLabels = dataRow.keySet().stream().sorted(this.pivotHierarchyComparator).toList();
 
             PivotRow pivotRow = new PivotRow();
             for (String label : sortedLabels) {
@@ -137,55 +202,8 @@ public class Pivoter {
 
         for (String hierarchy : pivotHierarchy)
             if (!dataRows.get(0).containsKey(hierarchy))
-                throw new IllegalArgumentException("Pivot hierarchy " + hierarchy + " is not valid against the provided data rows.");
+                throw new IllegalArgumentException("pivotHierarchy " + hierarchy + " is not consistent with the provided dataRows.");
 
         return pivotRows;
-    }
-
-    private void validatePivotHierarchy(List<String> pivotHierarchy, Map<String, String> dataRow) {
-        String previousHierarchy = null;
-        for (String hierarchy : pivotHierarchy) {
-            if (!dataRow.containsKey(hierarchy))
-                throw new IllegalArgumentException("Pivot hierarchy '" + hierarchy + "' is not valid against the provided data rows.");
-
-            if ("#".equals(hierarchy))
-                throw new IllegalArgumentException("Pivot hierarchy '" + hierarchy + "' is not valid.");
-
-            if (hierarchy.equals(previousHierarchy)) {
-                throw new IllegalArgumentException("Pivot hierarchy '" + hierarchy + "' is duplicated.");
-            }
-
-            previousHierarchy = hierarchy;
-        }
-    }
-
-    private void validateDataRow(Map<String, String> dataRow, int labelsSize) { // map prevents duplicated labels
-        if (labelsSize != dataRow.keySet().size()) {
-            throw new IllegalArgumentException(String.format(
-                    "Inconsistent number of labels in the data row. Expected %d labels, but found %d: %s",
-                    labelsSize, dataRow.keySet().size(), dataRow));
-        }
-        if (!dataRow.containsKey("#")) {
-            throw new IllegalArgumentException("Each data row must contain a label '#' for the numerical value.");
-        }
-        if (!PivoterUtils.isDouble(dataRow.get("#"))) {
-            throw new IllegalArgumentException(String.format(
-                    "Invalid numerical value for label '#': '%s'. The value must be a valid Double.", dataRow.get("#")));
-        }
-    }
-
-    private void validateDataRowLabel(String label, List<String> labels, Map<String, String> dataRow) {
-        if (label.isEmpty() || label.isBlank()) {
-            throw new IllegalArgumentException(String.format(
-                    "Data row contains empty or blank labels: %s. Labels must be non-empty strings.", dataRow));
-        }
-        if (dataRow.get(label) == null) {
-            throw new IllegalArgumentException(String.format(
-                    "Data row %s contains a null value for label '%s'. All labels must have non-null values.", dataRow, label));
-        }
-        if (!"#".equals(label) && !labels.contains(label)) {
-            throw new IllegalArgumentException(String.format(
-                    "Label '%s' in data row %s does not match the consistent set of labels: %s", label, dataRow, labels));
-        }
     }
 }

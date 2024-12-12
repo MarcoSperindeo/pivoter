@@ -19,22 +19,11 @@ public class PivoterUtils {
         }
     }
 
-    /********** pivot hierarchy **********/
-
-    public static Comparator<String> getHierarchyComparator(List<String> pivotHierarchy) {
-        return (s1, s2) -> {
-            pivotHierarchy.add("#");
-            // ensure both strings are valid
-            if (!pivotHierarchy.contains(s1)) {
-                throw new IllegalArgumentException("Invalid string: " + s1);
-            }
-            if (!pivotHierarchy.contains(s2)) {
-                throw new IllegalArgumentException("Invalid string: " + s2);
-            }
-
-            // compare based on the pivot hierarchy
-            return Integer.compare(pivotHierarchy.indexOf(s1), pivotHierarchy.indexOf(s2));
-        };
+    public static boolean hasDuplicates(List<?> list) {
+        Set<Object> seen = new HashSet<>();
+        for (Object element : list)
+            if (!seen.add(element)) return true; // duplicate found
+        return false; // no duplicates found
     }
 
     /********** custom aggregation functions **********/

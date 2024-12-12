@@ -1,6 +1,12 @@
-# Pivot Table Report
+# Why
+The goal of this project was merely to practice **TDD** (Test Driven Development) while designing a robust and intuitive **API**.
 
-The goal for this assignment is to create a **Java API**, the kind of API that can be used as a library and not the REST API kind. The only functionality to expose is a **pivot functionality**.
+# What
+
+A **Java API** whose core functionality exposed is **pivoting**.
+It is the so-called...
+
+## Pivoter
 
 ### API Input
 The API input is composed of:
@@ -12,19 +18,14 @@ rowᵢ = (L₁ᵢ, L₂ᵢ, L₃ᵢ, ..., Lₙᵢ, Vᵢ)
 
 Here, `Lⱼᵢ` belongs to Domain `j`.
 
-2. **Aggregation Function**: A function that takes a collection of numerical values as input and returns a single value.
+2. **Aggregation Function**: A function that takes a collection of numerical values as input and returns a single value. The library must accept **custom aggregation functions** defined by the API consumer (*e.g.*, sum, average, mode, etc.).
+
 
 3. **Aggregation Order**: The description of the aggregation hierarchy.
 
 ### API Output
-The output is an **aggregation tree**:
-- This tree can be queried to obtain the value of aggregations at any level, for any labeling group.
-
----
-
-### Deliverable
-- The deliverable must be a Maven/Gradle project complete with **unit tests** to verify the correct implementation of the library.
-- The library must accept **custom aggregation functions** defined by the user (e.g., average, median).
+The output is an **aggregation tree**. 
+The tree can be queried to obtain the value of aggregations at any level, for any labeling group.
 
 ---
 

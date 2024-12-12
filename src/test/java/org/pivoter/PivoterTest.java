@@ -1,6 +1,5 @@
 package org.pivoter;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.pivoter.utils.PivoterUtils;
 
@@ -14,23 +13,23 @@ class PivoterTest {
     Pivoter pivoter = new Pivoter();
 
     @Test
-    void testValidate_throwsIfDataRowsIsNull() {
+    void testValidateDataRows_throwsIfDataRowsIsNull() {
         // given-when-then
         assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> pivoter.validate(null))
-                .withMessage("Input data rows cannot be null or empty. Ensure that you provide a list of data rows.");
+                .isThrownBy(() -> pivoter.validateDataRows(null))
+                .withMessage("dataRows cannot be null or empty. Ensure that you provide a valid list of dataRows.");
     }
 
     @Test
-    void testValidate_throwsIfDataRowsIsEmpty() {
+    void testValidateDataRows_throwsIfDataRowsIsEmpty() {
         // given-when-then
         assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> pivoter.validate(Collections.emptyList()))
-                .withMessage("Input data rows cannot be null or empty. Ensure that you provide a list of data rows.");
+                .isThrownBy(() -> pivoter.validateDataRows(Collections.emptyList()))
+                .withMessage("dataRows cannot be null or empty. Ensure that you provide a valid list of dataRows.");
     }
 
     @Test
-    void testValidate_throwsIfLabelsSizeIsNotFixed() {
+    void testValidateDataRows_throwsIfLabelsSizeIsNotFixed() {
         // given
         Double dataRowValue1 = 10.0;
         Double dataRowValue2 = 20.0;
@@ -43,12 +42,12 @@ class PivoterTest {
         );
         // when-then
         assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> pivoter.validate(dataRows))
-                .withMessageContaining("Inconsistent number of labels in the data row. Expected 4 labels, but found 3:");
+                .isThrownBy(() -> pivoter.validateDataRows(dataRows))
+                .withMessageContaining("Inconsistent number of labels in dataRow. Expected 4 labels, but found 3:");
     }
 
     @Test
-    void testValidate_throwsIfValueLabelIsNotANumber() {
+    void testValidateDataRows_throwsIfValueLabelIsNotANumber() {
         // given
         String dataRowValue1 = "M";
         Double dataRowValue2 = 20.0;
@@ -61,12 +60,12 @@ class PivoterTest {
         );
         // when-then
         assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> pivoter.validate(dataRows))
+                .isThrownBy(() -> pivoter.validateDataRows(dataRows))
                 .withMessage("Invalid numerical value for label '#': '" + dataRowValue1 + "'. The value must be a valid Double.");
     }
 
     @Test
-    void testValidate_throwsIfHashLabelIsMissing() {
+    void testValidateDataRows_throwsIfHashLabelIsMissing() {
         // given
         Double dataRowValue2 = 20.0;
         Double dataRowValue3 = 30.0;
@@ -78,12 +77,12 @@ class PivoterTest {
         );
         // when-then
         assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> pivoter.validate(dataRows))
-                .withMessage("Each data row must contain a label '#' for the numerical value.");
+                .isThrownBy(() -> pivoter.validateDataRows(dataRows))
+                .withMessage("Each dataRow must contain a label '#' for the numerical value.");
     }
 
     @Test
-    void testValidate_throwsIfEmptyOrBlankLabel() {
+    void testValidateDataRows_throwsIfEmptyOrBlankLabel() {
         // given
         Double dataRowValue1 = 10.0;
         Double dataRowValue2 = 20.0;
@@ -96,12 +95,12 @@ class PivoterTest {
         );
         // when-then
         assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> pivoter.validate(dataRows))
-                .withMessageContaining("Data row contains empty or blank labels:");
+                .isThrownBy(() -> pivoter.validateDataRows(dataRows))
+                .withMessageContaining("dataRow contains empty or blank labels:");
     }
 
     @Test
-    void testValidate_throwsIfNullLabelValue() {
+    void testValidateDataRows_throwsIfNullLabelValue() {
         // given
         Double dataRowValue1 = 10.0;
         Double dataRowValue2 = 20.0;
@@ -120,12 +119,12 @@ class PivoterTest {
         );
         // when-then
         assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> pivoter.validate(dataRows))
+                .isThrownBy(() -> pivoter.validateDataRows(dataRows))
                 .withMessageContaining("All labels must have non-null values.");
     }
 
     @Test
-    void testValidate_throwsIfInconsistentLabels() {
+    void testValidateDataRows_throwsIfInconsistentLabels() {
         // given
         Double dataRowValue1 = 10.0;
         Double dataRowValue2 = 20.0;
@@ -138,7 +137,7 @@ class PivoterTest {
         );
         // when-then
         assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> pivoter.validate(dataRows))
+                .isThrownBy(() -> pivoter.validateDataRows(dataRows))
                 .withMessageContaining("does not match the consistent set of labels:");
     }
 
@@ -249,7 +248,105 @@ class PivoterTest {
     }
 
     @Test
-    void testPivot_averageWithNaturalOrderHierarchy() {
+    void testPivot_throwsIfPivotHierarchyNotConsistentWithDataRows() {
+        // given
+        Double dataRowValue1 = 10.0;
+        Double dataRowValue2 = 20.0;
+        Double dataRowValue3 = 30.0;
+
+        List<Map<String, String>> dataRows1 = Arrays.asList(
+                Map.of("eyes", "brown", "hair", "dark", "nation", "italy", "#", dataRowValue1.toString()),
+                Map.of("eyes", "blue", "hair", "blonde", "nation", "italy", "#", dataRowValue2.toString()),
+                Map.of("eyes", "blue", "hair", "dark", "nation", "italy", "#", dataRowValue3.toString())
+        );
+
+        List<String> pivotHierarchy1 = List.of("height", "eyes", "nation");
+
+        // when
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> pivoter.pivot(dataRows1, pivotHierarchy1))
+                .withMessageContaining("not consistent with the provided dataRow.");
+
+        // given
+        List<String> pivotHierarchy2 = List.of("hair", "eyes", "nation", "height");
+
+        // when
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> pivoter.pivot(dataRows1, pivotHierarchy2))
+                .withMessageContaining("not consistent with the provided dataRow.");
+    }
+
+    @Test
+    void testPivot_throwsIfPivotHierarchyContainsHashLabel() {
+        // given
+        Double dataRowValue1 = 10.0;
+        Double dataRowValue2 = 20.0;
+        Double dataRowValue3 = 30.0;
+
+        List<Map<String, String>> dataRows = Arrays.asList(
+                Map.of("eyes", "brown", "hair", "dark", "nation", "italy", "#", dataRowValue1.toString()),
+                Map.of("eyes", "blue", "hair", "blonde", "nation", "italy", "#", dataRowValue2.toString()),
+                Map.of("eyes", "blue", "hair", "dark", "nation", "italy", "#", dataRowValue3.toString())
+        );
+
+        List<String> pivotHierarchy = List.of("hair", "eyes", "#");
+
+        // when
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> pivoter.pivot(dataRows, pivotHierarchy))
+                .withMessageContaining("pivotHierarchy label '#' is not valid.");
+    }
+
+    @Test
+    void testPivot_throwsIfDuplicatedElementInPivotHierarchy() {
+        // given
+        Double dataRowValue1 = 10.0;
+        Double dataRowValue2 = 20.0;
+        Double dataRowValue3 = 30.0;
+
+        List<Map<String, String>> dataRows = Arrays.asList(
+                Map.of("eyes", "brown", "hair", "dark", "nation", "italy", "#", dataRowValue1.toString()),
+                Map.of("eyes", "blue", "hair", "blonde", "nation", "italy", "#", dataRowValue2.toString()),
+                Map.of("eyes", "blue", "hair", "dark", "nation", "italy", "#", dataRowValue3.toString())
+        );
+
+        List<String> pivotHierarchy = List.of("hair", "eyes", "hair");
+
+        // when
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> pivoter.pivot(dataRows, pivotHierarchy))
+                .withMessageContaining("pivotHierarchy cannot contain duplicates");
+    }
+
+    @Test
+    void testPivotAndQuery_sumWithCustomHierarchy() {
+        // given
+        Double dataRowValue1 = 10.0;
+        Double dataRowValue2 = 20.0;
+        Double dataRowValue3 = 30.0;
+
+        List<Map<String, String>> dataRows = Arrays.asList(
+                Map.of("eyes", "brown", "hair", "dark", "nation", "italy", "#", dataRowValue1.toString()),
+                Map.of("eyes", "blue", "hair", "blonde", "nation", "italy", "#", dataRowValue2.toString()),
+                Map.of("eyes", "blue", "hair", "dark", "nation", "italy", "#", dataRowValue3.toString())
+        );
+
+        List<String> pivotHierarchy = List.of("hair", "eyes", "nation");
+
+        // when
+        pivoter.pivot(dataRows, pivotHierarchy);
+
+        String queryLabel1 = "dark";
+        List<String> queryLabels1 = List.of(queryLabel1);
+
+        Double result1 = pivoter.query(queryLabels1, PivoterUtils::sum);
+
+        // then
+        assertThat(result1).isNotNull().isEqualTo((dataRowValue1 + dataRowValue3));
+    }
+
+    @Test
+    void testPivotAndQuery_averageWithNaturalOrderHierarchy() {
         // given
         Double dataRowValue1 = 10.0;
         Double dataRowValue2 = 20.0;
@@ -264,79 +361,101 @@ class PivoterTest {
         // when
         pivoter.pivot(dataRows);
 
-        // then
         String queryLabel1 = "blue";
         List<String> queryLabels = List.of(queryLabel1);
+
         Double result = pivoter.query(queryLabels, PivoterUtils::average);
 
-        assertThat(result).isNotNull().isEqualTo((dataRowValue2 + dataRowValue3)/2);
+        // then
+        assertThat(result).isNotNull().isEqualTo((dataRowValue2 + dataRowValue3) / 2);
     }
 
     @Test
-    void validatePivotHierarchy_throwsIfNotValidAgainstDataRows() {
-    }
-
-    @Test
-    void validatePivotHierarchy_throwsIfContainsHash() {
-    }
-
-    @Test
-    void validatePivotHierarchy_throwsIfDuplicatedElement() {
-    }
-
-    @Test
-    void testPivot_averageWithCustomHierarchyA() {
+    void testPivotAndQuery_averageWithCustomHierarchy() {
         // given
         Double dataRowValue1 = 10.0;
         Double dataRowValue2 = 20.0;
         Double dataRowValue3 = 30.0;
 
-        List<Map<String, String>> dataRows1 = Arrays.asList(
+        List<Map<String, String>> dataRows = Arrays.asList(
                 Map.of("eyes", "brown", "hair", "dark", "nation", "italy", "#", dataRowValue1.toString()),
                 Map.of("eyes", "blue", "hair", "blonde", "nation", "italy", "#", dataRowValue2.toString()),
                 Map.of("eyes", "blue", "hair", "dark", "nation", "italy", "#", dataRowValue3.toString())
         );
 
-        List<String> pivotHierarchy1 = List.of("hair", "eyes", "nation");
+        List<String> pivotHierarchy = List.of("nation", "hair", "eyes");
 
         // when
-        pivoter.pivot(dataRows1, pivotHierarchy1);
+        pivoter.pivot(dataRows, pivotHierarchy);
 
-        System.out.println(pivoter.getPivotTree());
+        String queryLabel1 = "italy";
+        List<String> queryLabels = List.of(queryLabel1);
+
+        Double result2 = pivoter.query(queryLabels, PivoterUtils::average);
 
         // then
-        String queryLabel11 = "dark";
-        List<String> queryLabels1 = List.of(queryLabel11);
-        Double result1 = pivoter.query(queryLabels1, PivoterUtils::average);
-
-        assertThat(result1).isNotNull().isEqualTo((dataRowValue1 + dataRowValue3)/2);
+        assertThat(result2).isNotNull().isEqualTo((dataRowValue1 + dataRowValue2 + dataRowValue3) / 3);
     }
 
     @Test
-    void testPivot_averageWithCustomHierarchyB() {
+    void testPivotAndQuery_throwsIfQueryLabelsAreNull() {
         // given
         Double dataRowValue1 = 10.0;
         Double dataRowValue2 = 20.0;
         Double dataRowValue3 = 30.0;
 
-        List<Map<String, String>> dataRows2 = Arrays.asList(
+        List<Map<String, String>> dataRows = Arrays.asList(
                 Map.of("eyes", "brown", "hair", "dark", "nation", "italy", "#", dataRowValue1.toString()),
                 Map.of("eyes", "blue", "hair", "blonde", "nation", "italy", "#", dataRowValue2.toString()),
                 Map.of("eyes", "blue", "hair", "dark", "nation", "italy", "#", dataRowValue3.toString())
         );
 
-        List<String> pivotHierarchy2 = List.of("nation", "hair", "eyes");
+        List<String> pivotHierarchy = List.of("hair", "eyes", "nation");
 
         // when
-        pivoter.pivot(dataRows2, pivotHierarchy2);
+        pivoter.pivot(dataRows, pivotHierarchy);
 
-        System.out.println(pivoter.getPivotTree());
+
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> pivoter.query(null, PivoterUtils::sum))
+                .withMessageContaining("queryLabels cannot be null.");
+    }
+
+    @Test
+    void testPivotTwiceAndQuery_pivotHierarchyIsReset() {
+        // given
+        Double dataRowValue1 = 10.0;
+        Double dataRowValue2 = 20.0;
+        Double dataRowValue3 = 30.0;
+
+        List<Map<String, String>> dataRows = Arrays.asList(
+                Map.of("eyes", "brown", "hair", "dark", "nation", "italy", "#", dataRowValue1.toString()),
+                Map.of("eyes", "blue", "hair", "blonde", "nation", "italy", "#", dataRowValue2.toString()),
+                Map.of("eyes", "blue", "hair", "dark", "nation", "italy", "#", dataRowValue3.toString())
+        );
+
+        List<String> pivotHierarchy = List.of("nation", "hair", "eyes");
+
+        // when
+        pivoter.pivot(dataRows, pivotHierarchy);
+
+        String queryLabel1 = "italy";
+        List<String> queryLabels = List.of(queryLabel1);
+
+        Double result = pivoter.query(queryLabels, PivoterUtils::average);
 
         // then
-        String queryLabel12 = "italy";
-        List<String> queryLabels2 = List.of(queryLabel12);
+        assertThat(result).isNotNull().isEqualTo((dataRowValue1 + dataRowValue2 + dataRowValue3) / 3);
+
+        // when
+        pivoter.pivot(dataRows);
+
+        String queryLabel2 = "blue";
+        List<String> queryLabels2 = List.of(queryLabel2);
+
         Double result2 = pivoter.query(queryLabels2, PivoterUtils::average);
 
-        assertThat(result2).isNotNull().isEqualTo((dataRowValue1 + dataRowValue2 + dataRowValue3)/3);
+        // then
+        assertThat(result2).isNotNull().isEqualTo((dataRowValue2 + dataRowValue3) / 2);
     }
 }
