@@ -19,13 +19,6 @@ public class PivoterUtils {
         }
     }
 
-    public static boolean hasDuplicates(List<?> list) {
-        Set<Object> seen = new HashSet<>();
-        for (Object element : list)
-            if (!seen.add(element)) return true; // duplicate found
-        return false; // no duplicates found
-    }
-
     /********** custom aggregation functions **********/
 
     public static double sum(Collection<Double> values) {
