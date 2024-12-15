@@ -5,8 +5,65 @@ import org.pivoter.utils.PivoterUtils;
 
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.IntStream;
 
+/**
+ * <p>The {@code Pivoter} class provides functionality to create and query pivot trees
+ * from structured data.
+ * A pivot tree is a hierarchical representation of data
+ * aggregated based on specified labels or hierarchy levels.</p>
+ *
+ * <p>The {@code Pivoter} class leverages the {@link PivotTree} class to construct
+ * and traverse pivot trees. {@link PivotTree} represents the hierarchical data structure
+ * and supports recursive querying and aggregation of data values.
+ *
+ * <h2>Key Features</h2>
+ * <ul>
+ *   <li>Builds a {@link PivotTree} from input data rows with either a natural order
+ *       or a custom hierarchy.</li>
+ *   <li>Validates input data rows to ensure consistency and correctness.</li>
+ *   <li>Supports querying of aggregated values within the pivot tree using custom
+ *       aggregation functions.</li>
+ *   <li>Allows customization of hierarchy levels via a user-defined comparator.</li>
+ * </ul>
+ *
+ * <h2>Usage Example</h2>
+ * <pre>{@code
+ * Pivoter pivoter = new Pivoter();
+ *
+ * // Sample data rows
+ * List<Map<String, String>> dataRows = List.of(
+ *     Map.of("Region", "North", "Product", "A", "#", "100"),
+ *     Map.of("Region", "South", "Product", "A", "#", "200"),
+ *     Map.of("Region", "North", "Product", "B", "#", "150")
+ * );
+ *
+ * // Build the pivot tree with a natural order hierarchy
+ * pivoter.pivot(dataRows);
+ *
+ * // Query aggregated values
+ * List<String> queryLabels = List.of("Region", "North");
+ * Double totalValue = pivoter.query(queryLabels, values -> values.stream().mapToDouble(Double::doubleValue).sum());
+ *
+ * System.out.println("Total value for Region 'North': " + totalValue);
+ * }</pre>
+ *
+ * <h2>Relationship with {@code PivotTree}</h2>
+ * {@code Pivoter} serves as a higher-level API for constructing and interacting with
+ * {@link PivotTree}. While {@code Pivoter} focuses on data transformation, validation,
+ * and hierarchy management, {@link PivotTree} handles the underlying tree structure
+ * and aggregation logic.
+ *
+ * <h2>Performance</h2>
+ * <ul>
+ *   <li>Tree building: O(m * n) complexity, where n is the number of data rows and
+ *       m is the number of labels per row.</li>
+ *   <li>Query execution: O(m * log(n)) complexity for traversing the tree and applying
+ *       the aggregation functions.</li>
+ * </ul>
+ *
+ * @see PivotTree
+ * @see PivotTreeNode
+ */
 public class Pivoter {
 
     private PivotTree pivotTree;
@@ -170,7 +227,7 @@ public class Pivoter {
     }
 
     /**
-     * does not adhere to SRP, but is more efficient,
+     * Does not adhere to SRP, but is more efficient,
      * having O(n * log(m) * m) complexity rather than 2 * (O(n * log(m) * m)) complexity,
      * where n = #rows, m = #labels
      */

@@ -22,7 +22,7 @@ public class PivotTree {
 
         for (PivotRow pivotRow : pivotRows) {
             List<String> sortedLabels = pivotRow.getLabels();
-            sortedLabels.add(0, "root"); // ensure that "root" is the starting label
+            sortedLabels.add(0, "root"); // make "root" is the starting label
 
             PivotTreeNode node = root;
 
@@ -63,9 +63,7 @@ public class PivotTree {
         // // termination condition, leaf is reached
         if (sortedLabels.size() == 1) return;
 
-
         String currentLabel = sortedLabels.get(0);
-        // if current node des not have label, set it
         if (node.getLabel() == null) node.setLabel(currentLabel);
 
         String nextLabel = sortedLabels.get(1);
@@ -83,8 +81,7 @@ public class PivotTree {
     }
 
     private Double queryRecursive(PivotTreeNode node, List<String> sortedQueryLabels, Function<Collection<Double>, Double> pivotFunction) {
-        if (node == null) // node does not exist
-            return 0.0;
+        if (node == null) return 0.0;
 
         if (sortedQueryLabels.isEmpty()) // termination condition
             return pivotFunction.apply(node.getValues());
