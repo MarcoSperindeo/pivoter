@@ -1,12 +1,13 @@
-# Why
-The goal of this project was merely to practice **TDD** (Test Driven Development) while designing a robust and intuitive **API**.
-
 # What
 
-A **Java API** whose core functionality exposed is **pivoting**.
+A **Java API** whose core functionality exposed is to create and query pivot trees from structured data.
 It is the so-called...
 
 ## Pivoter
+
+# Why
+The goal of this project was merely to practice **TDD** (Test Driven Development) while designing a robust and intuitive **API**.
+
 
 ### API Input
 The API input is composed of:
