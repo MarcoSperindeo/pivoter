@@ -1,6 +1,7 @@
 # What
 
 A **Java API** whose core functionality exposed is to create and query pivot trees from structured data.
+
 It is the so-called...
 
 ## Pivoter
