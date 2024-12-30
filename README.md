@@ -4,11 +4,12 @@ A **Java API** whose core functionality exposed is to create and query pivot tre
 
 It is the so-called...
 
-## Pivoter
+### Pivoter
 
 # Why
 The goal of this project was merely to practice **TDD** (Test Driven Development) while designing a robust and intuitive **API**.
 
+# How
 
 ### API Input
 The API input is composed of:
